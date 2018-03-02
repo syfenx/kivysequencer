@@ -1,0 +1,201 @@
+#:kivy 1.10.0
+
+<Transport>:
+  canvas.before:
+    Color:
+      rgba: .2, .2, .2, 1
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  height:50
+  size_hint_y:None
+  spacing:10
+  padding:10
+  id:transport
+  BoxLayout:
+    Button:
+      text:"Add Track"
+      on_press:root.button_add_track()
+    Button:
+      text:"Play"
+      on_press:root.button_play()
+    Button:
+      text:"Pause"
+      on_press:root.button_add_track()
+    Button:
+      text:"Stop"
+      on_press:root.button_stop()
+<Row>:
+  background_color: .33,.33,.33,1 
+  value: ''
+  size_hint_y:.1
+  height:10
+  id: r_but
+  on_press: root.button_pressed()
+  text: root.value
+
+<FilenameLister>:
+  id:rv
+  scroll_type: ['bars','content']
+  scroll_wheel_distance: dp(114)
+  bar_width: dp(10)
+  viewclass: 'Row'
+  RecycleBoxLayout:
+    default_size: None, dp(25)
+    default_size_hint: 1, None
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: 'vertical'
+    spacing: dp(2)
+
+<StepPanelMain>:
+  id:rv3
+  scroll_type: ['bars','content']
+  scroll_wheel_distance: dp(114)
+  bar_width: dp(10)
+  viewclass: 'StepRow'
+  # RecycleBoxLayout:
+  #   default_size: None, dp(25)
+  #   default_size_hint: 1, None
+  #   size_hint_y: None
+  #   height: self.minimum_height
+  #   orientation: 'vertical'
+  #   spacing: dp(2)
+
+<StepPanel_grid_base>:
+  canvas.before:
+    Color:
+      rgba: 0, 1, 0, 1
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  padding:20
+  id:rv2
+  # size_hint_y: 1
+  # scroll_type: ['bars']
+  # scroll_wheel_distance: dp(114)
+  # bar_width: dp(10)
+  # default_size: None, dp(60)
+  # default_size_hint: 1, None
+  # size_hint_y: None
+  # height: self.minimum_height
+  # orientation: 'vertical'
+  # spacing: 50
+  # viewclass: 'StepRow'
+  # RecycleBoxLayout:
+  #   default_size: None, dp(60)
+  #   default_size_hint: 1, None
+  #   size_hint_y: None
+  #   height: self.minimum_height
+  #   orientation: 'vertical'
+  #   spacing: dp(30)
+  # RecycleBoxLayout:
+  #     default_size: None, dp(60)
+  #     default_size_hint: 1, None
+  #     size_hint_y: None
+  #     height: self.minimum_height
+  #     orientation: 'vertical'
+  #     spacing: dp(30)
+<StepPanel2_grid>:
+  canvas.before:
+    Color:
+      rgba: 0, 0, 1, 1
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  height: self.minimum_height
+  size_hint_y: 1
+<StepRowPanel>:
+  canvas.before:
+    Color:
+      rgba: 0, 0, 1, 1
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  # default_size: None, dp(60)
+  # default_size_hint: 1, None
+  # size_hint_y: None
+  # height: self.minimum_height
+  # orientation: 'vertical'
+  # spacing: 50
+  id:"steppan"
+<StepButton>:
+  size_hint_x:1
+  size_hint_y:1
+  spacing:100
+  background_color: .33,.33,.33, 1
+  # id: "s_but"
+  step_id: root.step_id
+  # text: root.step_id
+  on_press:root.button_pressed(self.id)
+
+<StepRow>:
+  canvas.before:
+    Color:
+      rgba: 0.3, 0.3, 0.3, 1
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  padding: 10
+  spacing: 50
+  size_hint_x:1
+  size_hint_y:None
+  height:100
+  id: s_row
+  fn: "fn"
+  # on_touch_down: root.button_pressed()
+  orientation: "horizontal"
+  BoxLayout:
+    background_color: 1, 0, 0, 0
+    orientation: "horizontal"
+    cols:4 
+    # padding:50
+    # size_hint_x:1
+    # size_hint_y:1
+    # spacing: 150
+    Label:
+      text: str(s1.value) + root.fn
+      color: 1, 0, 0, 1
+      font_size:'15sp'
+      size_hint_x:.1
+    Button:
+      text:"Remove Track"
+      on_press:root.button_pressed()
+      size_hint_x:.1
+    Slider:
+      id: s1
+      orientation:"horizontal"
+      size_hint_x:.1
+      on_value:root.slider_change(self.value)
+      min:0.01
+      max:0.900
+      value:0.125
+      value_track: True
+      value_track_color: [0,1,0,1]
+    BoxLayout:
+      size_hint_x:1
+      size_hint_y:1
+      cols: 1
+      StepButton:
+        step_id:'1'
+      StepButton:
+        step_id:'2'
+      StepButton:
+        step_id:'3'
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+      StepButton:
+<SequencerLayout>:
+  orientation: "horizontal"
+  padding: 10
+  spacing: 10
