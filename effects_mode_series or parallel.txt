@@ -1,0 +1,21 @@
+
+s = Server(sr=44100, nchnls=2, buffersize=512, duplex=1).boot() 
+
+MODE = 1 # 0 = serie, 1 = parallel 
+
+# A sound that comes with pyo 
+sf = SfPlayer(SNDS_PATH+"/transparent.aif", loop=True, mul=0.5) 
+
+if MODE == 0: 
+    # Chorus input = soundfile player 
+    cho = Chorus(sf, depth=1, feedback=0.5, bal=0.5).out() 
+    lfo = Sine(freq=0.1).range(0, 0.005) 
+    # Flanger input = chorus 
+    flg = Delay(cho, delay=lfo, feedback=0.5).out() 
+else: 
+    # Chorus input = soundfile player 
+    cho = Chorus(sf, depth=1, feedback=0.5, bal=0.5).out() 
+    lfo = Sine(freq=0.1).range(0, 0.005) 
+    # Flanger input = also soundfile player 
+    flg = Delay(sf, delay=lfo, feedback=0.5).out() 
+    sf.out() 
