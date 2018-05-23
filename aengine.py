@@ -23,6 +23,9 @@ class AudioEngine(object):
     def record(self):
         self.engine.recordOptions(dur=100, filename="output_13.wav", fileformat=0, sampletype=1)
         self.engine.recstart()
+    def get_outputs(self):
+        outs = pa_get_output_devices()
+        return outs
 
     # def playsound(self, filename):
     #     self.sf = SfPlayer(filename, mul=0.3)

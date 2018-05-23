@@ -20,30 +20,33 @@ from kivy.uix.gridlayout import GridLayout
 from scrollview_edit import ScrollView
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.uix.togglebutton import ToggleButton
 from kivy.core.window import Window
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.recyclelayout import RecycleLayout
 from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.popup import Popup
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty, ListProperty
 from kivy.uix.behaviors import DragBehavior
-# from pyo import *
 from kivy.graphics import Color
 from kivy.graphics import (Rectangle, Ellipse, Line)
 from kivy.config import Config
 Config.set('graphics', 'width', '1920')
 Config.set('graphics', 'height', '1080')
+Config.write()
+from kivy.core.window import Window
+Window.size = (2000, 1500)
 from kivy.clock import Clock
 from functools import partial
 from aengine import AudioEngine, AudioMixer, AudioItem
-from seq_widget import MyPaintWidget
+from seq_widget import SeqGridWidget
 
 from kivy.effects.scroll import ScrollEffect
 
 class DummyEffect(ScrollEffect):
     pass
-
 
 class SequencerLayout(BoxLayout):
     def __init__(self, **kwargs):
@@ -52,16 +55,8 @@ class SequencerLayout(BoxLayout):
         self.am = AudioMixer()
         self.ae.start()
         self.metro_val = .125
-
         print("remember to play the metro")
-        # self.m = Metro(self.metro_val)
-        # self.tf = TrigFunc(self.m, self.trigged)
-        # drawing on canvas example
-        # with self.canvas:
-        #     Color(0, 1, 0, 1)
-        #     Rectangle(pos=(0, 100), size=(400, 400))
 
-        
         self.tracks = []  # PUT THIS IN AENGINE CLASS
 
         self.inc = 0
@@ -75,30 +70,14 @@ class SequencerLayout(BoxLayout):
         # self.ae.record()
 
     def trigged(self):
-        # print("trigged")
         app = App.get_running_app()
         self.inc += 1
-        # print(self.parent.children[0].children[0].children[1].children)
+
         if self.inc == 16:
             self.inc = 0
-        # for row in self.parent.children[0].children[0].children[1].children:
 
-        # self.tracks[11].play()
-        # if self.tracks is not None:
-        #     for track in self.tracks:
-        #         print(track)
-        #         print(track.filename)
-        # track.sample[]
-            # mixer_panel_grid.add_widget(Button(text="hahaha"))
-        # track.play()
-        # for row in app.root.children[0].children[1].children:
-            # self.iterate_buttons(row)
         for row in app.step_panel_grid.children:
-            # print(row.children[0])
             for button in row.children[0].children[0].children:
-                # print(button)
-                # print("chil",row.children[0].children[0].children)
-                # print(type(button))
                 print(button.background_color)
                 if type(button) is StepButton:
                     if button.step_id == str(self.inc):
@@ -106,15 +85,6 @@ class SequencerLayout(BoxLayout):
                             button.background_color = get_color_from_hex(
                                 "#0fff22")
                             path = "sounds/" + button.parent.parent.parent.fn
-                            # app.root.ae.playsound(path)
-                            # self.tracks[self.inc].setfn(path)
-                            # self.tracks[self.inc].sf.speed = uniform(0, 1)
-                            # self.tracks[self.inc].play()
-                                    # app.root.am.tracks[self.inc].play()
-                            # for t in app.root.am.tracks:
-                            #     if t.filename == path:
-                            #         t.play()
-                            # print(uniform(0,1))
                     else:
                         button.background_color = (.33, .33, .33, 1)
 
@@ -129,7 +99,6 @@ class StepRow(BoxLayout):
     #         self.add_widget(StepButton(step_id=str(x), id=f"but_{x}", text=f"{x}"))
 
     def button_pressed(self):
-        # self.parent.remove_widget(self)
         app = App.get_running_app()
         print("track was added by button")
         app.root.am.addTrack("sounds/snare1.wav")
@@ -146,7 +115,7 @@ class StepRow(BoxLayout):
         app.root.metro_val = val
         app.root.m.setTime(val)
         print(val)
-
+        
 
 class BeatRow(StepRow):
     pass
@@ -159,7 +128,6 @@ class Transport(BoxLayout):
         print("problem")
 
         # add to StepRowPanel
-        # self.parent.children[1].add_widget(row)
         for a in range(25):
             row = StepRow()
             # but = StepButton()
@@ -169,18 +137,35 @@ class Transport(BoxLayout):
                 row.add_widget(
                     StepButton(step_id=str(x), id=f"but_{x}", text=f"{x}"))
             app.steprowpanel.add_widget(row)
-    def button_play(self):
+    def button_options(self):
+        print("options pressed")
+        # popup = Popup(title='Options',
+        #     content=Button(text='Options'),
+        #     size_hint=(None, None), size=(400, 400))
+        # popup.open()
         app = App.get_running_app()
+        cont = GridLayout(cols=1)
+        out_list = app.root.ae.get_outputs()
+        for item in out_list[0]:
+            print(item)
+            cont.add_widget(Button(text="{}".format(item)))
+
+        popup = Popup(title='Sound Options',
+            content=cont,
+            size_hint=(None, None), size=(400, 400))
+        popup.open()
+
+    def button_play(self):
         print("play pressed")
-        app.root.m.play()
+        # app.root.m.play()
     def button_stop(self):
         app = App.get_running_app()
         app.root.m.stop()
 
 
-
+# Filename lister on left
 class Row(Button):
-    # part of filename lister on the left
+    # button pressed
     def button_pressed(self):
         app = App.get_running_app()
         print(self.text)
@@ -260,14 +245,6 @@ class SequencerApp(App):
         # add anothergrid to mixer_panel_grid
         mixer_panel_grid.add_widget(anothergrid)
 
-        # for j in range(TRACK_COUNT):
-        #     mixer_panel_grid.add_widget(
-        #         Button(
-        #             text="MIXERPANEL " + str(j),
-        #             height=200,
-        #             width=150,
-        #             size_hint=(None, 1)))
-
         # mixer_base holds mixer_panel_grid
         mixer_base = ScrollView(
             size_hint=(1, None),
@@ -287,18 +264,6 @@ class SequencerApp(App):
             cols=1, 
             size_hint=(1,1))
         
-        # self.steprowpanel.bind(minimum_height=self.steprowpanel.setter('height'))
-        # self.steprow_base.add_widget(self.steprowpanel)
-        # self.steprowpanel = StepRowPanel()
-        #################################################################################
-        #################################################################################
-
-
-        # recursion error on resize because I think this height/width is too high.
-        # step_panel_grid = GridLayout(
-        #     cols=1,size_hint=(None,None),height=20000,width=20000)
-        # step_panel_grid.bind(minimum_width=step_panel_grid.setter('width'))
-
         step_base = ScrollView(
             size_hint=(1,1),
             do_scroll_y=True,
@@ -306,44 +271,20 @@ class SequencerApp(App):
         step_base.bar_width=20
         step_base.scroll_type = ['bars']
 
-    # scroll = ScrollView()
-# scroll.effect_cls = DummyEffect
         step_base.effect_cls = DummyEffect
         # Add mixer_panel_grid to mixer_base(Scrollview)
-        b = MyPaintWidget()
+        b = SeqGridWidget()
 
-        # step_panel_grid.add_widget(b)
         step_base.add_widget(b)
+
         # LEFT OFF HERE
         print("This line is last attempt at grid, testing paintwidget")
-        # step_base.add_widget(self.step_panel_grid)
-        #################################################################################
-        #################################################################################
-
-        # mixer_base = ScrollView(
-        #     size_hint=(1, None),
-        #     size=(200, 400),
-        #     do_scroll_y=False,
-        #     do_scroll_x=True)
-        # step_panel_scroll = StepPanelScroll(
-        #     size_hint=(1,None),
-        #     do_scroll_y=True
-        # )
-        # step_panel_main.size_hint_x = 1
-        # step_panel_main.size_hint_y=None
-        # a = GridLayout(cols=1,size_hint_y=None)
-        
-        # a.bind(minimum_height=a.setter('height'))
-        # for x in range(0,22):
-            # step_panel_main.data.insert(0, {'value': str(x)})
-            # self.step_panel_grid.add_widget(StepRow())
-        # step_panel_scroll.add_widget(a)
 
         # lists samples on left
         file_list = FilenameLister()
         file_list.size_hint_x = .13
-        for x in range(0,100):
-            file_list.data.insert(0, {'value': str(x)})
+        # for x in range(0,100):
+        #     file_list.data.insert(0, {'value': str(x)})
 
         sample_filename_list = []
         for file in os.listdir("sounds"):
@@ -355,92 +296,28 @@ class SequencerApp(App):
         sequencer_layout_grid.add_widget(transport)
         print(sample_filename_list)
 
-
-        # RECYCLEVIEW
-        # self.sp_grid_base = StepPanel_grid_base(cols=1)
-        # self.sp_grid_base.add_widget(step_panel_scroll)
-        
         sequencer_layout_grid.add_widget(step_base)
-        # self.steppanel2.size_hint_y=1
-        # self.steppanel2.viewclass = "StepRow"
 
-        # self.steppanel2_grid = StepPanel_base_grid(cols=1)
-        # self.steppanel2_grid.bind(minimum_height=self.steppanel2_grid.setter('height'))
-        # self.steppanel2.size=(1000, 100)
-
-        # RECYCLEBOXLAYOUT
-        # self.step_recy_box = RecycleBoxLayout(
-        #     size_hint=(1,None),
-        #     spacing=50)
-
-    # RecycleBoxLayout:
-    #     default_size: None, dp(60)
-    #     default_size_hint: 1, None
-    #     size_hint_y: None
-    #     height: self.minimum_height
-    #     orientation: 'vertical'
-    #     spacing: dp(30)
-        # for x in range(0,100):
-            # self.steppanel2.data.insert(0, {'value': str(x)})
-            # self.steppanel2_grid.add_widget(StepRow())
-
-
-        # self.steppanel2_grid.bind(minimum_height=self.steppanel2_grid.setter('height'))
-
-
-
-#   RecycleBoxLayout:
-#     default_size: None, dp(25)
-#     default_size_hint: 1, None
-#     size_hint_y: None
-#     height: self.minimum_height
-#     orientation: 'vertical'
-#     spacing: dp(60)
-
-        # for x in range(20):
-        #     # self.step_recy_box.add_widget(Button(text="crap"))
-
-
-
-        # Add multiple steps(StepRow) to steprowpanel
-        # sequencer_layout_grid.add_widget(self.steprow_base)
         app = App.get_running_app()
         for i in range(TRACK_COUNT):
             row = StepRow(id="row_{}".format(i))
-            # mp.add_widget(Button(text="MIXERPANEL",height=300,size_hint_y=None))
-            # row.fn = "fn " + str(i)
-            # append audioitem to tracks list
 
             # Add number of mixer panels per track added
-
             mixer_panel_grid.add_widget(
                 Button(
                     text="MIXERPANEL \n" + str(sample_filename_list[i]),
                     height=200,
                     width=150,
                     size_hint=(None, 1)))
-            # app.root.tracks.append(
-            #     AudioItem("sounds/" + sample_filename_list[i], 0.3, 0, 0))
 
             row.fn = sample_filename_list[i]
-            # self.steprowpanel.add_widget(row)
             for x in range(STEP_COUNT):
                 row.add_widget(
                     StepButton(step_id=str(x), id=f"but_{x}", text=f"{x}"))
-                # self.step_recy_box.add_widget(Button(text="crap"))
 
-        # print list of tracks/samples in use
-        # for track in self.tracks:
-        #     print(track.filename)
-            # track.play()
         sequencer_layout_grid.add_widget(mixer_base)
         sequencer_layout.add_widget(sequencer_layout_grid)
-        # for item in self.steprowpanel.children:
-        #     print(item.id)
 
-        # b = MyPaintWidget()
-        # print("MyPaintWidget added")
-        # sequencer_layout_grid.add_widget(b)
         return sequencer_layout
 
 

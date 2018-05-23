@@ -7,9 +7,9 @@ from kivy.uix.label import Label
 from kivy.clock import Clock
 from functools import partial
 from kivy.utils import get_color_from_hex
-
 from kivy.core.window import Window
 from pyo import *
+
 def paint_stress_test(width, height):
     # stress test
     for x in range(102333):
@@ -55,6 +55,7 @@ class GridLines(object):
         v-=1
 
 def draw_grid(amt, start, width, height, space):
+
     Color(1, 1, 1)
     for x in range(int(amt)):
         if x % 4 == 0:
@@ -71,10 +72,11 @@ def draw_grid(amt, start, width, height, space):
         Color(.2,.2,.2)
         # horizontal line
         Line(points=[0, start, width, start])
+    print("grid drawrwww")
 
-class MyPaintWidget(Widget):
+class SeqGridWidget(Widget):
     def __init__(self, **kwargs):
-        super(MyPaintWidget, self).__init__(**kwargs)
+        super(SeqGridWidget, self).__init__(**kwargs)
 
         # Change background color
         Window.clearcolor=get_color_from_hex("#444444")
@@ -97,9 +99,11 @@ class MyPaintWidget(Widget):
         self.items = []
 
         # self.playhead = PlayHead(800)
-        self.playhead = Line(points=[0, 900, 0, 0]).width=3
+        # Color(1, 0, 0)
+        # self.playhead = Line(points=[0, 900, 0, 0])
+        # self.playhead.width = 3
 
-        Clock.schedule_interval(self.my_callback, 0.1)
+        Clock.schedule_interval(self.my_callback, 0.01)
 
         with self.canvas:
             draw_grid(self.amt,self.start,self.width,self.height, self.space)
@@ -108,32 +112,32 @@ class MyPaintWidget(Widget):
 
     # temporarily moves playhead on screen
     def my_callback(self, dt=0):
-        print("fired")
-        self.playhead_increment+=10
-        print(self.playhead_increment)
+        self.playhead_increment+=5
+        print("seq_widget " + str(self.playhead_increment))
 
 
         if self.playhead_increment > self.width:
             self.playhead_increment=0
         
         p = [30+self.playhead_increment,self.height,30+self.playhead_increment,0]
+        print(p)
         with self.canvas:
             Color(1, 0, 0)
             self.ph.width = 4
             self.ph.points = p
+            Line(points=p)
             # self.playhead.playhead_line
             # self.playhead.playhead_line.width=300
             # print(self.playhead.playhead_line)
             # self.playhead.moveX(self.playhead_increment)
 
     def on_touch_down(self, touch):
-        super(MyPaintWidget,self).on_touch_down(touch)
+        super(SeqGridWidget, self).on_touch_down(touch)
         with self.canvas:
             # paint_stress_test(self.width, self.height)
             # draw small pink rect
             Color(1, 0, 1)
             Rectangle(pos=(touch.x - self.d / 2, touch.y - self.d / 2), size=(5, 5))
-
 
             # the test can of course be simplified: a.pos[0] < touch.x < a.pos[0] + a.size[0] and a.pos[1] < touch.y < a.pos[1] + a.size[1]
             # just put a = self.a on the line before
@@ -156,8 +160,8 @@ class MyPaintWidget(Widget):
                 self.canvas.add(self.a)
 
                 # Label connected to audio block
-                b = Label(text="follow drag")
-                b.pos = (touch.x, touch.y)
+                b = Label(text="Sound clip")
+                b.pos = (touch.x-45, touch.y)
                 self.add_widget(b)
 
     def on_touch_up(self,touch):
@@ -166,14 +170,15 @@ class MyPaintWidget(Widget):
     def on_touch_move(self, touch):
         if self.drag == True:
             self.selected_item.pos = (touch.x - self.selected_item.size[0]/2, touch.y-self.selected_item.size[1]/2)
+            print("drag " + str(self.selected_item.pos))
         else:
             self.drag = False
 
        
-class MyPaintApp(App):
+class SeqGridWidgetApp(App):
     def build(self):
-        return MyPaintWidget()
+        return SeqGridWidget()
 
 
 if __name__ == '__main__':
-    MyPaintApp().run()
+    SeqGridWidgetApp().run()
