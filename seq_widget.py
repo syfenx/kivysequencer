@@ -81,6 +81,7 @@ class SeqGridWidget(Widget):
         # Change background color
         Window.clearcolor=get_color_from_hex("#444444")
 
+        self.block_list = []
         self.inc = 0
         self.d=5.
         self.size_hint=(None,None)
@@ -88,7 +89,7 @@ class SeqGridWidget(Widget):
         self.width = self.size[0]
         self.height = self.size[1]
         self.ph = Line(points=[30,self.height,30, self.height])
-        self.space = 64
+        self.space = 32
         self.start = 0
         self.amt = self.width / self.space
         print(self.amt)
@@ -103,29 +104,33 @@ class SeqGridWidget(Widget):
         # self.playhead = Line(points=[0, 900, 0, 0])
         # self.playhead.width = 3
 
-        Clock.schedule_interval(self.my_callback, 0.01)
+        print(get_color_from_hex("#ff0000"))
+        Clock.schedule_interval(self.move_playhead, 0.01)
 
         with self.canvas:
             draw_grid(self.amt,self.start,self.width,self.height, self.space)
+            # Change playhead color
+            Color(0.25, 0.95, 0.87, 1)
 
-        self.add_widget(Button(text="testbutton"))
+        self.canvas.add(self.ph)
 
     # temporarily moves playhead on screen
-    def my_callback(self, dt=0):
-        self.playhead_increment+=5
-        print("seq_widget " + str(self.playhead_increment))
+    def move_playhead(self, dt=0):
+        self.playhead_increment+=30
+        # print("seq_widget " + str(self.playhead_increment))
 
-
-        if self.playhead_increment > self.width:
+        # if playhead reaches end of window width, loop back to beginning
+        # if self.playhead_increment > Window.size[0]:
+        #     self.playhead_increment=0
+        if self.playhead_increment > self.size[0]:
             self.playhead_increment=0
         
         p = [30+self.playhead_increment,self.height,30+self.playhead_increment,0]
-        print(p)
+        # print(p)
         with self.canvas:
-            Color(1, 0, 0)
-            self.ph.width = 4
+            self.ph.width = 2
             self.ph.points = p
-            Line(points=p)
+            # Line(points=p)
             # self.playhead.playhead_line
             # self.playhead.playhead_line.width=300
             # print(self.playhead.playhead_line)
@@ -133,6 +138,25 @@ class SeqGridWidget(Widget):
 
     def on_touch_down(self, touch):
         super(SeqGridWidget, self).on_touch_down(touch)
+
+        blk = Rectangle(pos=(touch.x - self.d / 2, touch.y - self.d / 2), size=(5, 5))
+        print("stopped here")
+        # this doubles up when scanning blocks, make sure to check this
+        # be sure to edit to allow inviduals ops, color, size, text, fn
+        # effects list
+        
+        self.block_list.append(blk)
+        self.canvas.add(blk)
+
+        print("*"*20)
+        print("Block list count: ", len(self.block_list))
+        for item in self.block_list:
+            print("Block pos", item.pos)
+            print("Block size", item.size)
+        print("*"*20)
+        # for item in self.block_list:
+        #     self.canvas.add(item)
+        # self.canvas.add(self.block_list)
         with self.canvas:
             # paint_stress_test(self.width, self.height)
             # draw small pink rect

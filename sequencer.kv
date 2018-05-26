@@ -28,6 +28,9 @@
     Button:
       text:"Stop"
       on_press:root.button_stop()
+    Button:
+      text:"About"
+      on_press:root.button_about()
 <Row>:
   background_color: .33,.33,.33,1 
   value: ''
@@ -199,6 +202,12 @@
       StepButton:
       StepButton:
 <SequencerLayout>:
+  canvas.before:
+    Color:
+      rgba: .17, .17, .17, 1
+    Rectangle:
+      size: self.size
+      pos: self.pos
   orientation: "horizontal"
-  padding: 10
-  spacing: 10
+  padding: 20
+  spacing: 20

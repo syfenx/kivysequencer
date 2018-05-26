@@ -26,6 +26,9 @@ class AudioEngine(object):
     def get_outputs(self):
         outs = pa_get_output_devices()
         return outs
+    def set_output(self, device_number):
+        self.engine.setInOutDevice(device_number)
+        self.sf = SfPlayer("sounds/kick1.wav", mul=0.3).mix(2).out()
 
     # def playsound(self, filename):
     #     self.sf = SfPlayer(filename, mul=0.3)
