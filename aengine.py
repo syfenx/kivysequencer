@@ -1,10 +1,13 @@
 # import pyo as p
 from pyo import *
+import multiprocessing as mp
 #s = Server(sr=44100, nchnls=2, buffersize=512, duplex=0).boot()
 # s = Server(duplex=0)
 # s.boot()
 # s.start()
 #
+
+output = mp.Queue()
 
 class AudioEngine(object):
     def __init__(self):
@@ -15,7 +18,8 @@ class AudioEngine(object):
         self.buffersize = 512
         self.duplex = 0
         self.engine = Server(sr=self.sr, nchnls=self.nchnls, buffersize=self.buffersize, duplex=self.duplex)
-        self.engine.setInOutDevice(4)
+        self.engine.setInOutDevice(5)
+        # self.m = Metro(.125)
     def start(self):
         self.engine.boot()
         self.engine.start()
@@ -29,6 +33,12 @@ class AudioEngine(object):
     def set_output(self, device_number):
         self.engine.setInOutDevice(device_number)
         self.sf = SfPlayer("sounds/kick1.wav", mul=0.3).mix(2).out()
+
+    def start_metro(self):
+        self.m.play()
+
+    def stop_metro(self):
+        self.m.stop()
 
     # def playsound(self, filename):
     #     self.sf = SfPlayer(filename, mul=0.3)

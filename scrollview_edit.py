@@ -558,8 +558,8 @@ class ScrollView(StencilView):
         #     print("bad thing here")
         # if self.effect_y:
         #     self._update_effect_y_bounds()
-        print("bypass bad stuff line 553")
-        print("scrollview_edit")
+        print("bypass bad stuff line 553 (scrollview_edit)")
+        # print("scrollview_edit")
         # pass
 
     def _update_effect_x(self, *args):

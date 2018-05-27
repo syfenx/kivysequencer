@@ -9,10 +9,12 @@ from functools import partial
 from kivy.utils import get_color_from_hex
 from kivy.core.window import Window
 from pyo import *
+import multiprocessing
+stress_test = False
 
 def paint_stress_test(width, height):
     # stress test
-    for x in range(102333):
+    for x in range(1000):
         Rectangle(pos=(randint(1,width),randint(0, height)), size=(5, 5))
 
 class PlayHead(Widget):
@@ -80,7 +82,6 @@ class SeqGridWidget(Widget):
 
         # Change background color
         Window.clearcolor=get_color_from_hex("#444444")
-
         self.block_list = []
         self.inc = 0
         self.d=5.
@@ -96,6 +97,7 @@ class SeqGridWidget(Widget):
         self.drag = False
         self.selected_item = None
 
+        print("cpus: ", multiprocessing.cpu_count())
         self.playhead_increment = 0
         self.items = []
 
@@ -104,8 +106,9 @@ class SeqGridWidget(Widget):
         # self.playhead = Line(points=[0, 900, 0, 0])
         # self.playhead.width = 3
 
+
         print(get_color_from_hex("#ff0000"))
-        Clock.schedule_interval(self.move_playhead, 0.01)
+        # Clock.schedule_interval(self.move_playhead, 0.01)
 
         with self.canvas:
             draw_grid(self.amt,self.start,self.width,self.height, self.space)
@@ -115,8 +118,8 @@ class SeqGridWidget(Widget):
         self.canvas.add(self.ph)
 
     # temporarily moves playhead on screen
-    def move_playhead(self, dt=0):
-        self.playhead_increment+=30
+    def move_playhead(self):
+        self.playhead_increment+=self.space
         # print("seq_widget " + str(self.playhead_increment))
 
         # if playhead reaches end of window width, loop back to beginning
@@ -140,11 +143,9 @@ class SeqGridWidget(Widget):
         super(SeqGridWidget, self).on_touch_down(touch)
 
         blk = Rectangle(pos=(touch.x - self.d / 2, touch.y - self.d / 2), size=(5, 5))
-        print("stopped here")
         # this doubles up when scanning blocks, make sure to check this
-        # be sure to edit to allow inviduals ops, color, size, text, fn
+        # be sure to edit to allow individual ops, color, size, text, fn
         # effects list
-        
         self.block_list.append(blk)
         self.canvas.add(blk)
 
@@ -187,6 +188,9 @@ class SeqGridWidget(Widget):
                 b = Label(text="Sound clip")
                 b.pos = (touch.x-45, touch.y)
                 self.add_widget(b)
+
+            if stress_test:
+                paint_stress_test(self.width, self.height)
 
     def on_touch_up(self,touch):
         self.drag = False

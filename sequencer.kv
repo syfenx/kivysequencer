@@ -23,14 +23,16 @@
       text:"Play"
       on_press:root.button_play()
     Button:
-      text:"Pause"
-      on_press:root.button_add_track()
-    Button:
       text:"Stop"
       on_press:root.button_stop()
     Button:
       text:"About"
       on_press:root.button_about()
+    Spinner:
+      values:[str(x) for x in range(1,999)]
+      size_hint:(None,None)
+      size: (100, 44)
+      max_height: 190
 <Row>:
   background_color: .33,.33,.33,1 
   value: ''
