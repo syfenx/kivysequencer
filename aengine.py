@@ -12,16 +12,18 @@ output = mp.Queue()
 class AudioEngine(object):
     def __init__(self):
         # self.s = self.engine
-        # self.start()
+        # self.start(
         self.sr = 44100
         self.nchnls = 2
         self.buffersize = 512
         self.duplex = 0
-        self.engine = Server(sr=self.sr, nchnls=self.nchnls, buffersize=self.buffersize, duplex=self.duplex)
-        self.engine.setInOutDevice(5)
+        # self.engine = Server(sr=self.sr, nchnls=self.nchnls, buffersize=self.buffersize, duplex=self.duplex)
+        self.engine = Server(audio="jack")
+        # self.engine.setInOutDevice(5)
         # self.m = Metro(.125)
     def start(self):
         self.engine.boot()
+        # self.engine.setJackAuto(False, False) 
         self.engine.start()
         print("Engine started - Sample Rate: {sr} - Channels: {chan} - Buffer Size: {buf} - Duplex: {dup}".format(sr=self.sr,chan=self.nchnls,buf=self.buffersize,dup=self.duplex))
     def record(self):

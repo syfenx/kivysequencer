@@ -63,10 +63,12 @@ class SequencerLayout(BoxLayout):
         self.ticks = 4 
         self.metro_val = (60000 / self.bpm / self.ticks) * 0.001
         self.sgr = SeqGridWidget()
+        self.loop = False
 
         self.tracks = []  # PUT THIS IN AENGINE CLASS
 
         self.m = Metro(self.metro_val).play()
+        
         self.tf = TrigFunc(self.m, self.trigged)
 
         self.inc = 0
@@ -83,7 +85,7 @@ class SequencerLayout(BoxLayout):
     def trigged(self):
         # print('trigged')
         app = App.get_running_app()
-        self.ae.playsound("sounds/snare1.wav")
+        self.ae.playsound("sounds/kick2.wav")
         # app.root.Seqdget.move_playhead()
         self.sgr.move_playhead()
         # SeqGridWidget.move_playhead()
@@ -103,15 +105,13 @@ class SequencerLayout(BoxLayout):
     #                     if button.state == "down":
     #                         button.background_color = get_color_from_hex(
     #                             "#0fff22")
-    #                         path = "sounds/" + button.parent.parent.parent.fn
+    #                 f        path = "sounds/" + button.parent.parent.parent.fn
     #                 else:
     #                     button.background_color = (.33, .33, .33, 1)
 
 
 class Transport(BoxLayout):
-    def button_add_track(self):
-        print("Add track button")
-
+    
     def button_about(self):
         print("about pressed")
         cont = GridLayout(cols=1)
@@ -130,9 +130,27 @@ class Transport(BoxLayout):
 
     # Options audio output selector callback
     # this handles the dynamic buttons
-    def callback(self, instance):
+    def audio_opts_button_callback(self, instance):
         print("but was clicked", instance.text)
-        # intentional error to remember where left off
+
+
+    def bpm_text(self, instance):
+        print("text was entered")
+        print(instance.text)
+        app = App.get_running_app()
+        app.root.m.setTime((60000 / int(instance.text) / 4) * 0.001)
+
+    def button_loop(self, instance):
+        print("loop")
+        app = App.get_running_app()
+        app.root.sgr.loop = True
+        if instance.state == "down":
+            print("down")
+            app.root.sgr.loop = True
+        else:
+            app.root.sgr.loop = False
+            print("up")
+
 
     def button_options(self):
         print("options pressed")
@@ -146,7 +164,7 @@ class Transport(BoxLayout):
         for x, y in zip(*out_list):
             # intentional error to remember where left off
             b = Button(id="{}".format(y), text="{} {}".format(x,y))
-            b.bind(on_press=self.callback)
+            b.bind(on_press=self.audio_opts_button_callback)
             cont.add_widget(b)
         for x in self.children:
             print(x)
@@ -242,6 +260,7 @@ class SequencerApp(App):
         sequencer_layout = SequencerLayout()
         sequencer_layout_grid = GridLayout(cols=1, id="rowcontainer")
         transport = Transport()
+        transport.size=(200,60)
 
         # Add test buttons to top transport panel
         for x in range(3):

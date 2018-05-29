@@ -6,6 +6,7 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.clock import Clock
 from functools import partial
+from kivy.graphics.instructions import InstructionGroup
 from kivy.utils import get_color_from_hex
 from kivy.core.window import Window
 from pyo import *
@@ -64,7 +65,7 @@ def draw_grid(amt, start, width, height, space):
             # every 4th line is darker
             # vertical line - thick width
             Color(.2,.2,.2)
-            Line(points=[0+start, height, 0+start, 0]).width=4
+            Line(points=[0+start, height, 0+start, 0]).width=2
         else:
             Color(.2,.2,.2)
             # vertical line - normal width
@@ -90,16 +91,18 @@ class SeqGridWidget(Widget):
         self.width = self.size[0]
         self.height = self.size[1]
         self.ph = Line(points=[30,self.height,30, self.height])
-        self.space = 32
+        self.space = 16
         self.start = 0
         self.amt = self.width / self.space
-        print(self.amt)
+        print("self AMT",self.amt)
         self.drag = False
         self.selected_item = None
 
         print("cpus: ", multiprocessing.cpu_count())
         self.playhead_increment = 0
         self.items = []
+        self.loop = False
+        self.loops = InstructionGroup()
 
         # self.playhead = PlayHead(800)
         # Color(1, 0, 0)
@@ -107,7 +110,7 @@ class SeqGridWidget(Widget):
         # self.playhead.width = 3
 
 
-        print(get_color_from_hex("#ff0000"))
+        print(get_color_from_hex("#6e6e6e"))
         # Clock.schedule_interval(self.move_playhead, 0.01)
 
         with self.canvas:
@@ -115,7 +118,22 @@ class SeqGridWidget(Widget):
             # Change playhead color
             Color(0.25, 0.95, 0.87, 1)
 
+
         self.canvas.add(self.ph)
+
+        with self.canvas:
+            # top grey horizontal bar
+            # controls playhead skipping / looping markers
+            Color(0.43, 0.43, 0.43, 1)
+            Rectangle(pos=(0,self.height-20), size=(self.width,20))
+
+
+    def adjust_playhead(self, touch):
+        if touch.y > (self.height-20):
+            self.playhead_increment = touch.x - self.space*2
+            p = [touch.x,self.height,touch.x,0]
+            with self.canvas:
+                self.ph.points = p
 
     # temporarily moves playhead on screen
     def move_playhead(self):
@@ -137,7 +155,25 @@ class SeqGridWidget(Widget):
             # self.playhead.playhead_line
             # self.playhead.playhead_line.width=300
             # print(self.playhead.playhead_line)
-            # self.playhead.moveX(self.playhead_increment)
+            # self.playhead.moveX(self.playhead_incremen)
+        if self.loop:
+                loopL = Line(points=[30+20,self.height,30+20,0])
+                loopR = Line(points=[30+70,self.height,30+70,0])
+                handle_size=(20,20)
+                top_padding = 20
+                loopHandleL = Rectangle(pos=(loopL.points[0]-(handle_size[0]/2),self.height-top_padding), size=handle_size)
+                loopHandleR = Rectangle(pos=(loopR.points[0]-(handle_size[0]/2),self.height-top_padding), size=handle_size)
+                self.loops.add(loopL)
+                self.loops.add(loopR)
+                self.loops.add(loopHandleL)
+                self.loops.add(loopHandleR)
+                self.canvas.add(self.loops)
+                Color(0,1,1)
+        else:
+            # self.canvas.clear()
+            # self.loops.clear()
+            self.canvas.remove(self.loops)
+            self.loops.clear() # self.canvas.clear()
 
     def on_touch_down(self, touch):
         super(SeqGridWidget, self).on_touch_down(touch)
@@ -148,6 +184,13 @@ class SeqGridWidget(Widget):
         # effects list
         self.block_list.append(blk)
         self.canvas.add(blk)
+
+
+        # if mouse is less than grid height-20, change pos of playhead
+        # on touch down
+        # if touch.y > (self.height-20):
+        #     self.playhead_increment = touch.x - self.space*2
+        self.adjust_playhead(touch)
 
         print("*"*20)
         print("Block list count: ", len(self.block_list))
@@ -176,7 +219,7 @@ class SeqGridWidget(Widget):
 
             if self.drag == False:
                 Color(1, uniform(0,1), 0)
-                box_size = 64
+                box_size = self.space
                 self.a=Rectangle(pos=(touch.x - box_size / 2, touch.y - box_size / 2), size=(box_size, box_size))
                 # add to item list
                 self.items.append(self.a)
@@ -196,6 +239,12 @@ class SeqGridWidget(Widget):
         self.drag = False
 
     def on_touch_move(self, touch):
+        # if mouse is less than grid height-20, change pos of playhead
+        # on touch drag
+        # if touch.y > (self.height-20):
+        #     self.playhead_increment = touch.x - self.space*2
+        self.adjust_playhead(touch)
+
         if self.drag == True:
             self.selected_item.pos = (touch.x - self.selected_item.size[0]/2, touch.y-self.selected_item.size[1]/2)
             print("drag " + str(self.selected_item.pos))
