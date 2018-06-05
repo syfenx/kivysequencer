@@ -43,7 +43,8 @@ from kivy.core.window import Window
 Window.size = (2000, 1500)
 from kivy.clock import Clock
 from functools import partial
-from aengine import AudioEngine, AudioMixer, AudioItem
+# from aengine import AudioEngine, AudioMixer, AudioItem
+from aengine_thread import AudioEngine, AudioMixer, AudioItem
 from seq_widget import SeqGridWidget
 
 from kivy.effects.scroll import ScrollEffect
@@ -59,6 +60,7 @@ class SequencerLayout(BoxLayout):
         self.ae = AudioEngine()
         self.am = AudioMixer()
         self.ae.start()
+        # self.ae.run()
         self.bpm = 120
         self.ticks = 4 
         self.metro_val = (60000 / self.bpm / self.ticks) * 0.001
@@ -67,9 +69,11 @@ class SequencerLayout(BoxLayout):
 
         self.tracks = []  # PUT THIS IN AENGINE CLASS
 
-        self.m = Metro(self.metro_val).play()
+        # self.m = Metro(self.metro_val).play()
+        for x in range(100):
+            print("METRO IS DISABLED")
         
-        self.tf = TrigFunc(self.m, self.trigged)
+        # self.tf = TrigFunc(self.m, self.trigged)
 
         self.inc = 0
 
@@ -132,6 +136,9 @@ class Transport(BoxLayout):
     # this handles the dynamic buttons
     def audio_opts_button_callback(self, instance):
         print("but was clicked", instance.text)
+        app = App.get_running_app()
+        app.root.ae.set_output(4)
+
 
 
     def bpm_text(self, instance):
@@ -140,15 +147,17 @@ class Transport(BoxLayout):
         app = App.get_running_app()
         app.root.m.setTime((60000 / int(instance.text) / 4) * 0.001)
 
-    def button_loop(self, instance):
+    def button_loop(self, button):
         print("loop")
         app = App.get_running_app()
-        app.root.sgr.loop = True
-        if instance.state == "down":
+        # app.root.sgr.loop = True
+        if button.state == "down":
             print("down")
-            app.root.sgr.loop = True
+            # app.root.sgr.loop = True
+            app.root.sgr.loop_func(True)
         else:
-            app.root.sgr.loop = False
+            # app.root.sgr.loop = False
+            app.root.sgr.loop_func(False)
             print("up")
 
 
@@ -222,32 +231,6 @@ class StepPanel_grid_base(GridLayout):
 class StepRowPanel(GridLayout):
     pass
 
-class StepButton(ToggleButton):
-    step_id = StringProperty('')
-    pat = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    background_color_normal = ListProperty([1, 1, 1, 0.5])
-
-    def button_pressed(self, *args):
-        print('State ' + self.state)
-        print('Text ' + self.text)
-        path = "sounds/" + "snare1.wav"
-        # print(self.parent.fn)
-        if self.state == "down":
-            self.background_color_normal = ""
-            # self.background_color = (1, 0, 0, 1)
-            self.background_color = get_color_from_hex("#ff0f7f")
-            # self.pat[int(self.step_id)] = 1
-        else:
-            self.background_color_normal = ""
-            # self.pat[int(self.step_id)] = 0
-            # App.get_running_app().root.playsound(path)
-            self.background_color = get_color_from_hex("#333333")
-        print(self.parent.id, self.pat)
-
-    def change_color_back(self, button, *args):
-        button.background_color = (0, 1, 0, 1)
-
-
 class SequencerApp(App):
     def __init__(self, **kwargs):
         super(SequencerApp, self).__init__(**kwargs)
@@ -263,8 +246,8 @@ class SequencerApp(App):
         transport.size=(200,60)
 
         # Add test buttons to top transport panel
-        for x in range(3):
-            transport.add_widget(Button(text=f"testing {x}"))
+        # for x in range(3):
+        #     transport.add_widget(Button(text=f"testing {x}"))
 
         # mixer_panel_grid
         global mixer_panel_grid
@@ -323,7 +306,6 @@ class SequencerApp(App):
 
         app = App.get_running_app()
         for i in range(TRACK_COUNT):
-            # row = StepRow(id="row_{}".format(i))
 
             # Add number of mixer panels per track added
             # mixer_panel_grid.add_widget(anothergrid)
@@ -335,19 +317,11 @@ class SequencerApp(App):
                     size_hint_x=None))
             
             mixer_panel_grid.add_widget(BoxLayout())
-            # mixer_panel_grid.add_widget(Button(text="2nd button", height=100, size_hint_y=.2))
-            # mixer_panel_grid.add_widget(Slider(size_hint=(None,None), max=100, value=4, orientation='vertical'))
-
-            # row.fn = sample_filename_list[i]
-            # for x in range(STEP_COUNT):
-            #     row.add_widget(
-            #         StepButton(step_id=str(x), id=f"but_{x}", text=f"{x}"))
 
         sequencer_layout_grid.add_widget(mixer_base)
         sequencer_layout.add_widget(sequencer_layout_grid)
 
         return sequencer_layout
-
 
 seq_app = SequencerApp()
 seq_app.run()

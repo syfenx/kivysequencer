@@ -33,7 +33,7 @@ class AudioEngine(object):
         outs = pa_get_output_devices()
         return outs
     def set_output(self, device_number):
-        self.engine.setInOutDevice(device_number)
+        self.engine.setInOutDevice(int(device_number))
         self.sf = SfPlayer("sounds/kick1.wav", mul=0.3).mix(2).out()
 
     def start_metro(self):
@@ -52,6 +52,34 @@ class AudioEngine(object):
         print("soundplayed")
 
 class AudioItem(object):
+    def __init__(self, filename, volume, pan, vel):
+        self.filename = filename
+        self.volume = volume
+        self.pan = pan
+        self.fx = []
+        self.vel = vel
+        self.sf = SfPlayer(self.filename, mul=0.3).stop()
+        self.sf2 = self.sf.mix(2).out()
+    def play(self):
+        self.sf.play()
+        # print("played audioitem")
+        # self.a = Trig()
+        # self.env = HannTable()
+        # self.tenv = TrigEnv(self.sf, table=self.env, dur=5, mul=.3)
+        # self.tenv.out()
+        # self.n = Noise(self.tenv).out()
+    def setfn(self, path):
+        self.sf.setPath(path)
+
+class AudioMixer(object):
+    def __init__(self):
+        print("mixer started")
+        self.tracks = []
+
+    def addTrack(self, fn):
+        self.fn = fn 
+        self.tracks.append(AudioItem(self.fn, 0, 0, 0))
+        print("added {} to mixer, total tracks = {}".format(self.fn, len(self.tracks)))
     def __init__(self, filename, volume, pan, vel):
         self.filename = filename
         self.volume = volume
