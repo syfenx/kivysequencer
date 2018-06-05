@@ -87,13 +87,14 @@ class AudioItem(object):
         self.pan = pan
         self.fx = []
         self.vel = vel
+        print("sound might fail here because aengine doesn't have server booted")
         # self.sf = SfPlayer(self.filename, mul=0.3).stop()
         # self.sf2 = self.sf.mix(2).out()
 
-        Color(1, uniform(0,1), 0)
+        Color(0.4, uniform(0.3,1), uniform(0,1))
         self.shape = Rectangle(pos=pos, size=size)
         self.text = Label(text="{}".format(filename[7:]))
-        self.text.pos = (self.shape.pos[0]-45, self.shape.pos[1])
+        self.text.pos = (self.shape.pos[0], self.shape.pos[1])
     def play(self):
         self.sf.play()
     def setfn(self, path):

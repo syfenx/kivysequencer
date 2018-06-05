@@ -15,6 +15,15 @@ import time
 from aengine_thread import AudioItem
 stress_test = False
 
+#TODO: select sound from sound palette
+#TODO: snap to grid lines
+#TODO: play sounds from thread
+#TODO: audio mixer
+#TODO: effects
+#TODO: synth sounds
+#TODO: waveform view
+#TODO: zoom gridlines
+
 def paint_stress_test(width, height):
     # stress test
     for x in range(1000):
@@ -59,24 +68,6 @@ class GridLines(object):
         c-=1
         v-=1
 
-def draw_grid(amt, start, width, height, space):
-
-    Color(1, 1, 1)
-    for x in range(int(amt)):
-        if x % 4 == 0:
-            # every 4th line is darker
-            # vertical line - thick width
-            Color(.2,.2,.2)
-            Line(points=[0+start, height, 0+start, 0]).width=2
-        else:
-            Color(.2,.2,.2)
-            # vertical line - normal width
-            Line(points=[0+start, height, 0+start, 0])
-        start+=space
-
-        Color(.2,.2,.2)
-        # horizontal line
-        Line(points=[0, start, width, start])
 
 class SeqGridWidget(Widget):
     def __init__(self, **kwargs):
@@ -86,6 +77,7 @@ class SeqGridWidget(Widget):
         Window.clearcolor=get_color_from_hex("#444444")
 
         # main widget
+        self.main_lines = []
         self.audio_items = []
         self.d=5.
         self.size_hint=(None,None)
@@ -112,8 +104,32 @@ class SeqGridWidget(Widget):
         self.loop = False
         self.loops = InstructionGroup()
 
-        self.items = []
-        self.grid_lines_main = []
+        # self.items = []
+        # self.grid_lines_main = []
+
+        def draw_grid(amt, start, width, height, space):
+
+            Color(1, 1, 1)
+            for x in range(int(amt)):
+                if x % 4 == 0:
+                    # every 4th line is darker
+                    # vertical line - thick width
+                    Color(.2,.2,.2)
+                    L = Line(points=[0+start, height, 0+start, 0])
+                    L.width = 2
+                    self.main_lines.append(L)
+                else:
+                    Color(.2,.2,.2)
+                    # vertical line - normal width
+                    L = Line(points=[0+start, height, 0+start, 0])
+                    self.main_lines.append(L)
+                start+=space
+
+                Color(.2,.2,.2)
+                # horizontal line
+                L = Line(points=[0, start, width, start])
+                self.main_lines.append(L)
+                print(self.main_lines)
 
         with self.canvas:
             draw_grid(self.amt,self.start,self.width,self.height, self.space)
@@ -176,20 +192,18 @@ class SeqGridWidget(Widget):
                 self.loops.add(loopHandleR)
                 self.canvas.add(self.loops)
         else:
-            # self.canvas.clear()
-            # self.loops.clear()
             self.canvas.remove(self.loops)
-            self.loops.clear() # self.canvas.clear()
-    def show_audio_items(self):
+            self.loops.clear() 
+    def show_audio_items_stats(self):
         print("*"*20)
-        print("Audio item count: ", len(self.audio_items))
         for item in self.audio_items:
             print("Block pos", item.shape.pos)
             print("Block size", item.shape.size)
+        print("Audio item count: ", len(self.audio_items))
         print("*"*20)
     def on_touch_down(self, touch):
         super(SeqGridWidget, self).on_touch_down(touch)
-        self.show_audio_items()
+        self.show_audio_items_stats()
         # if mouse is less than grid height-20, change pos of playhead
         # on touch down
         # if touch.y > (self.height-20):
@@ -239,6 +253,20 @@ class SeqGridWidget(Widget):
     def on_touch_up(self, touch):
         self.drag = False
 
+    def check_snap_to_grid(self):
+        for line in self.main_lines:
+            lineX = line.points[0]
+            lineY = line.points[1]
+            selShapeX = self.selected_item.shape.pos[0]
+            selShapeY = self.selected_item.shape.pos[1]
+            # snap to vertical line within spacing px amount
+            if selShapeX > lineX and selShapeX <= lineX + self.space:
+                self.selected_item.shape.pos = (lineX, selShapeY)
+                self.selected_item.text.pos = (self.selected_item.shape.pos[0], selShapeY)
+            # snap to horizontal line within spacing px amount
+            if selShapeY > lineY and selShapeY <= lineY + self.space:
+                self.selected_item.shape.pos = (selShapeX, lineY)
+                self.selected_item.text.pos = (self.selected_item.shape.pos[0], selShapeY)
     def on_touch_move(self, touch):
         # if mouse is less than grid height-20, change pos of playhead
         # on touch drag
@@ -250,6 +278,7 @@ class SeqGridWidget(Widget):
             self.selected_item.shape.pos = (touch.x - self.selected_item.shape.size[0]/2, touch.y-self.selected_item.shape.size[1]/2)
             self.selected_item.text.pos = (touch.x - self.selected_item.shape.size[0]/2, touch.y-self.selected_item.shape.size[1]/2)
             print("drag " + str(self.selected_item.shape.pos))
+            self.check_snap_to_grid()
         else:
             self.drag = False
 
