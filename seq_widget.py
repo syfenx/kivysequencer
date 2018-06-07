@@ -16,7 +16,8 @@ from aengine_thread import AudioItem
 stress_test = False
 
 #TODO: select sound from sound palette
-#TODO: snap to grid lines
+#TODO: snap to grid lines - done
+ # -- fix snapping to center of cursor
 #TODO: play sounds from thread
 #TODO: audio mixer
 #TODO: effects
@@ -86,7 +87,7 @@ class SeqGridWidget(Widget):
         self.height = self.size[1]
 
         # grid
-        self.space = 64
+        self.space = 32
         self.start = 0
         self.amt = self.width / self.space
 
@@ -129,13 +130,14 @@ class SeqGridWidget(Widget):
                 # horizontal line
                 L = Line(points=[0, start, width, start])
                 self.main_lines.append(L)
-                print(self.main_lines)
 
         with self.canvas:
             draw_grid(self.amt,self.start,self.width,self.height, self.space)
 
             # Change playhead color to blue
-            Color(0.25, 0.95, 0.87, 1)
+            # Color(0.25, 0.95, 0.87, 1)
+            # x = get_color_from_hex("#F685BD")
+            Color(0.96, 0.52, 0.74)
         self.canvas.add(self.ph)
 
         with self.canvas:
@@ -201,72 +203,97 @@ class SeqGridWidget(Widget):
             print("Block size", item.shape.size)
         print("Audio item count: ", len(self.audio_items))
         print("*"*20)
+    def check_click(self, touch, box, button_type):
+        # checks that we're in bounds when a button/rect is pressed
+        # check for right or left buttons
+        res = touch.x >=box.shape.pos[0] and touch.x <= box.shape.pos[0]+box.shape.size[0] \
+        and touch.y >=box.shape.pos[1] and touch.y <= box.shape.pos[1]+box.shape.size[1] and \
+        touch.button == button_type
+        return res
     def on_touch_down(self, touch):
         super(SeqGridWidget, self).on_touch_down(touch)
-        self.show_audio_items_stats()
-        # if mouse is less than grid height-20, change pos of playhead
-        # on touch down
-        # if touch.y > (self.height-20):
-        #     self.playhead_increment = touch.x - self.space*2
+
         # enables dragging of playhead
         self.adjust_playhead(touch)
 
-        # for item in self.block_list:
-        #     self.canvas.add(item)
-        # self.canvas.add(self.block_list)
         with self.canvas:
-            # the test can of course be simplified: a.pos[0] < touch.x < a.pos[0] + a.size[0] and a.pos[1] < touch.y < a.pos[1] + a.size[1]
-            # just put a = self.a on the line before
             # if playhead is being moved, don't place a block/rect
             if self.isPlayheadAdjust == False:
                 for box in self.audio_items:
-                    if touch.x >=box.shape.pos[0] and touch.x <= box.shape.pos[0]+box.shape.size[0]*2 and touch.y >=box.shape.pos[1] and touch.y <= box.shape.pos[1]+box.shape.size[1]*2:
+                    if self.check_click(touch, box, 'left'):
                         self.drag = True
                         self.selected_item = box
                         print("selected item",self.selected_item)
                         print("in bounds")
-                        # self.audioitems.append([audioitemclass, audioitemshape])
-                        # for audioitem in self.audioitems:
-                        #     aitem = audioitem[0]
-                        #     aitemshape = audioitem[1]
+                        print("left click")
 
-                if self.drag == False:
-                    Color(1, uniform(0,1), 0)
+                    if self.check_click(touch, box, 'right'):
+                        print("right click")
+                        self.selected_item = box
+                        idx = self.audio_items.index(self.selected_item)
+                        print("IS LABEL",self.audio_items[idx].text)
+                        #next(widget for widget in app.root.walk if widget is ...).parent.remove_widget(...)
+
+                        app = App.get_running_app()
+                        self.remove_widget(self.audio_items[idx].text)
+                        self.remove_widget(self.audio_items[idx])
+                        self.audio_items[idx].clear_widgets()
+
+                        # remove audio item (shape)
+                        self.canvas.remove(self.audio_items[idx].shape)
+
+                        # remove audio item (text)
+                        print("remove text here")
+                        # self.clear_widgets(self.audio_items)
+
+                        # remove audio item
+                        self.audio_items.remove(self.audio_items[idx])
+
+
+                # if not dragging and not right button, add new audio item
+                if self.drag == False and touch.button != 'right':
                     box_size = self.space
                     ai = AudioItem("sounds/snare1.wav", 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size, box_size])
-                    # self.a=Rectangle(pos=(touch.x - box_size / 2, touch.y - box_size / 2), size=(box_size, box_size))
-                    # add to item list
+                    # add to audio_item list
                     self.audio_items.append(ai)
-
-                    # add shape/rect to canvas
-                    # self.canvas.add(self.a)
-
-                    # Label connected to audio block
-                    # b = Label(text="Sound clip")
-                    # b.pos = (touch.x-45, touch.y)
-                    # self.add_widget(b)
-                    
+                    self.new_check_snap_to_grid(ai, touch)
 
                 if stress_test:
                     paint_stress_test(self.width, self.height)
+                self.show_audio_items_stats()
 
     def on_touch_up(self, touch):
         self.drag = False
 
-    def check_snap_to_grid(self):
+    def new_check_snap_to_grid(self, item, touch):
         for line in self.main_lines:
             lineX = line.points[0]
             lineY = line.points[1]
-            selShapeX = self.selected_item.shape.pos[0]
-            selShapeY = self.selected_item.shape.pos[1]
-            # snap to vertical line within spacing px amount
-            if selShapeX > lineX and selShapeX <= lineX + self.space:
-                self.selected_item.shape.pos = (lineX, selShapeY)
-                self.selected_item.text.pos = (self.selected_item.shape.pos[0], selShapeY)
-            # snap to horizontal line within spacing px amount
-            if selShapeY > lineY and selShapeY <= lineY + self.space:
-                self.selected_item.shape.pos = (selShapeX, lineY)
-                self.selected_item.text.pos = (self.selected_item.shape.pos[0], selShapeY)
+            selShapeX = item.shape.pos[0]
+            selShapeY = item.shape.pos[1]
+
+            if touch.x > lineX and touch.x <= lineX + self.space:
+                item.shape.pos = (lineX, selShapeY)
+                item.text.pos = (item.shape.pos[0], item.shape.pos[1])
+
+            if touch.y > lineY and touch.y <= lineY + self.space:
+                item.shape.pos = (selShapeX, lineY)
+                item.text.pos = (item.shape.pos[0], item.shape.pos[1])
+                # item.text.size = (32,32)
+
+            # if selShapeY > lineY + self.space/2 and selShapeY <= lineY + self.space:
+            #     item.shape.pos = (selShapeX, lineY)
+            #     item.text.pos = (item.shape.pos[0], item.shape.pos[1])
+
+            # # snap to vertical line within spacing px amount
+            # if selShapeX > lineX and selShapeX <= lineX + self.space-1:
+            #     item.shape.pos = (lineX, selShapeY)
+            #     item.text.pos = (item.shape.pos[0], item.shape.pos[1])
+            # # snap to horizontal line within spacing px amount
+            # elif selShapeY > lineY and selShapeY <= lineY + self.space-1:
+            #     item.shape.pos = (selShapeX, lineY)
+            #     item.text.pos = (item.shape.pos[0], item.shape.pos[1])
+
     def on_touch_move(self, touch):
         # if mouse is less than grid height-20, change pos of playhead
         # on touch drag
@@ -278,7 +305,7 @@ class SeqGridWidget(Widget):
             self.selected_item.shape.pos = (touch.x - self.selected_item.shape.size[0]/2, touch.y-self.selected_item.shape.size[1]/2)
             self.selected_item.text.pos = (touch.x - self.selected_item.shape.size[0]/2, touch.y-self.selected_item.shape.size[1]/2)
             print("drag " + str(self.selected_item.shape.pos))
-            self.check_snap_to_grid()
+            self.new_check_snap_to_grid(self.selected_item, touch)
         else:
             self.drag = False
 

@@ -45,14 +45,12 @@ from kivy.clock import Clock
 from functools import partial
 # from aengine import AudioEngine, AudioMixer, AudioItem
 from aengine_thread import AudioEngine, AudioMixer, AudioItem
+# for x in range(120000):
+#     print("change back to aengine_thread")
+
 from seq_widget import SeqGridWidget
 
-from kivy.effects.scroll import ScrollEffect
-
 APPNAME = "xSequencer"
-
-class DummyEffect(ScrollEffect):
-    pass
 
 class SequencerLayout(BoxLayout):
     def __init__(self, **kwargs):
@@ -94,26 +92,6 @@ class SequencerLayout(BoxLayout):
         self.sgr.move_playhead()
         # SeqGridWidget.move_playhead()
 
-    # def trigged(self):
-    #     app = App.get_running_app()
-    #     self.inc += 1
-
-    #     if self.inc == 16:
-    #         self.inc = 0
-
-    #     for row in app.step_panel_grid.children:
-    #         for button in row.children[0].children[0].children:
-    #             print(button.background_color)
-    #             if type(button) is StepButton:
-    #                 if button.step_id == str(self.inc):
-    #                     if button.state == "down":
-    #                         button.background_color = get_color_from_hex(
-    #                             "#0fff22")
-    #                 f        path = "sounds/" + button.parent.parent.parent.fn
-    #                 else:
-    #                     button.background_color = (.33, .33, .33, 1)
-
-
 class Transport(BoxLayout):
     
     def button_about(self):
@@ -138,8 +116,6 @@ class Transport(BoxLayout):
         print("but was clicked", instance.text)
         app = App.get_running_app()
         app.root.ae.set_output(4)
-
-
 
     def bpm_text(self, instance):
         print("text was entered")
@@ -245,9 +221,6 @@ class SequencerApp(App):
         transport = Transport()
         transport.size=(200,60)
 
-        # Add test buttons to top transport panel
-        # for x in range(3):
-        #     transport.add_widget(Button(text=f"testing {x}"))
 
         # mixer_panel_grid
         global mixer_panel_grid

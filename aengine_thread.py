@@ -4,6 +4,7 @@ import random
 from kivy.app import App
 from kivy.graphics import Color, Line, Rectangle
 from kivy.uix.label import Label
+from kivy.uix.widget import Widget
 from random import uniform
 
 # class AudioEngine(object):
@@ -80,8 +81,9 @@ class AudioEngine(multiprocessing.Process):
         # self.sf = self.sf.mix(2).out()
         print("soundplayed")
 
-class AudioItem(object):
+class AudioItem(Widget):
     def __init__(self, filename, volume, pan, vel, pos, size):
+        super(AudioItem, self).__init__()
         self.filename = filename
         self.volume = volume
         self.pan = pan
@@ -91,14 +93,23 @@ class AudioItem(object):
         # self.sf = SfPlayer(self.filename, mul=0.3).stop()
         # self.sf2 = self.sf.mix(2).out()
 
-        Color(0.4, uniform(0.3,1), uniform(0,1))
+        Color(0.4, uniform(0.3,1), uniform(0.3,1))
+        # Color(0.4, 0.52, 0.74)
+        # print(p.rgb)
+        self.size = (50,40)
         self.shape = Rectangle(pos=pos, size=size)
         self.text = Label(text="{}".format(filename[7:]))
+        self.add_widget(Label(text="testlabel"))
         self.text.pos = (self.shape.pos[0], self.shape.pos[1])
     def play(self):
         self.sf.play()
     def setfn(self, path):
         self.sf.setPath(path)
+    def rem(self):
+        app = App.get_running_app()
+        app.root.remove_widget(self.text)
+        # self.remove_widget(self.text)
+        print("rem called")
 
 class AudioMixer(object):
     def __init__(self):
@@ -115,6 +126,7 @@ class AudioMixer(object):
 if __name__ == '__main__':
     p1 = AudioEngine(48) 
     p1.start()
+    p1.join()
 
     # time.sleep(5)
     # p1.playsound("sounds/kick1.wav")
