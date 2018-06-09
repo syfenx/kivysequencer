@@ -83,6 +83,7 @@ class AudioEngine(multiprocessing.Process):
 
 class AudioItem(Widget):
     def __init__(self, filename, volume, pan, vel, pos, size):
+        print("init audioitem")
         super(AudioItem, self).__init__()
         self.filename = filename
         self.volume = volume
@@ -98,8 +99,9 @@ class AudioItem(Widget):
         # print(p.rgb)
         self.size = (50,40)
         self.shape = Rectangle(pos=pos, size=size)
-        self.text = Label(text="{}".format(filename[7:]))
-        self.add_widget(Label(text="testlabel"))
+        # self.text = Label(text="{}".format(filename[7:]))
+        self.text = Label(text="{}".format(""))
+        # self.add_widget(Label(text="testlabel"))
         self.text.pos = (self.shape.pos[0], self.shape.pos[1])
     def play(self):
         self.sf.play()

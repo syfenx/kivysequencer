@@ -26,10 +26,15 @@ stress_test = False
 #TODO: waveform view
 #TODO: zoom gridlines
 
-def paint_stress_test(width, height):
-    # stress test
-    for x in range(1000):
-        Rectangle(pos=(randint(1,width),randint(0, height)), size=(5, 5))
+
+class Info(object):
+    # dummy class for stress test to work
+    x = 0
+    y = 0
+class Selection_Box(object):
+    def __init__(self, x, y, w, h):
+        self.start = [0,0]
+        self.r = Rectangle(pos=[x,y], size=[w,h])
 
 class PlayHead(Widget):
     def __init__(self, height, location=40):
@@ -88,7 +93,7 @@ class SeqGridWidget(Widget):
         self.height = self.size[1]
 
         # grid
-        self.space = 32
+        self.space = 16
         self.start = 0
         self.amt = (self.width / self.space) * 2
 
@@ -105,6 +110,10 @@ class SeqGridWidget(Widget):
         # loop bars
         self.loop = False
         self.loops = InstructionGroup()
+
+
+        # selection box
+        self.sb = Selection_Box(0,0,50,50)
 
         # self.items = []
         # self.grid_lines_main = []
@@ -174,9 +183,8 @@ class SeqGridWidget(Widget):
         
         p = [30+self.playhead_increment,self.height,30+self.playhead_increment,0]
         # print(p)
-        with self.canvas:
-            self.ph.width = 2
-            self.ph.points = p
+        self.ph.width = 2
+        self.ph.points = p
             # Line(points=p)
             # self.playhead.playhead_line
             # self.playhead.playhead_line.width=300
@@ -215,55 +223,64 @@ class SeqGridWidget(Widget):
         return res
     def on_touch_down(self, touch):
         super(SeqGridWidget, self).on_touch_down(touch)
+        if touch.button == 'left':
+            print("startvalue", self.sb.start)
+            self.sb.start = touch.x, touch.y
+            print(self.sb.start)
+
+            # messy selection box, if rect sb is not in canvas children, add it and update
+            # pos and size
+            if self.sb.r not in self.canvas.children:
+                self.canvas.add(Color(0,0,0.3,0.08))
+                self.canvas.add(self.sb.r)
 
         # enables dragging of playhead
         self.adjust_playhead(touch)
 
-        with self.canvas:
-            # if playhead is being moved, don't place a block/rect
-            if self.isPlayheadAdjust == False:
-                for box in self.audio_items:
-                    if self.check_click(touch, box, 'left'):
-                        self.drag = True
-                        self.selected_item = box
-                        print("selected item",self.selected_item)
-                        print("in bounds")
-                        print("left click")
+        # if playhead is being moved, don't place a block/rect
+        if self.isPlayheadAdjust == False:
+            for box in self.audio_items:
+                if self.check_click(touch, box, 'left'):
+                    self.drag = True
+                    self.selected_item = box
+                    print("selected item (in bounds, left click)",self.selected_item)
 
-                    if self.check_click(touch, box, 'right'):
-                        print("right click")
-                        self.selected_item = box
-                        idx = self.audio_items.index(self.selected_item)
-                        print("IS LABEL",self.audio_items[idx].text)
-                        #next(widget for widget in app.root.walk if widget is ...).parent.remove_widget(...)
+                if self.check_click(touch, box, 'right'):
+                    print("right click")
+                    self.selected_item = box
+                    idx = self.audio_items.index(self.selected_item)
+                    print("IS LABEL",self.audio_items[idx].text)
+                    #next(widget for widget in app.root.walk if widget is ...).parent.remove_widget(...)
 
-                        app = App.get_running_app()
-                        self.remove_widget(self.audio_items[idx].text)
-                        self.remove_widget(self.audio_items[idx])
-                        self.audio_items[idx].clear_widgets()
+                    app = App.get_running_app()
+                    self.remove_widget(self.audio_items[idx].text)
+                    self.remove_widget(self.audio_items[idx])
+                    self.audio_items[idx].clear_widgets()
 
-                        # remove audio item (shape)
-                        self.canvas.remove(self.audio_items[idx].shape)
+                    # remove audio item (shape)
+                    self.canvas.remove(self.audio_items[idx].shape)
 
-                        # remove audio item (text)
-                        print("remove text here")
-                        # self.clear_widgets(self.audio_items)
+                    # remove audio item (text)
+                    print("remove text here")
+                    # self.clear_widgets(self.audio_items)
 
-                        # remove audio item
-                        self.audio_items.remove(self.audio_items[idx])
+                    # remove audio item
+                    self.audio_items.remove(self.audio_items[idx])
 
 
-                # if not dragging and not right button, add new audio item
-                if self.drag == False and touch.button != 'right':
+            # if not dragging and not right button, add new audio item
+            if self.drag == False and touch.button != 'right':
+                with self.canvas:
                     box_size = self.space
                     ai = AudioItem("sounds/snare1.wav", 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size, box_size])
                     # add to audio_item list
                     self.audio_items.append(ai)
                     self.new_check_snap_to_grid(ai, touch)
 
-                if stress_test:
-                    paint_stress_test(self.width, self.height)
-                self.show_audio_items_stats()
+            # debugging info / stress test
+            self.show_audio_items_stats()
+            if stress_test:
+                self.paint_stress_test(self.width, self.height)
 
     def on_touch_up(self, touch):
         self.drag = False
@@ -297,11 +314,39 @@ class SeqGridWidget(Widget):
             #     item.shape.pos = (selShapeX, lineY)
             #     item.text.pos = (item.shape.pos[0], item.shape.pos[1])
 
+    
     def on_touch_move(self, touch):
         # if mouse is less than grid height-20, change pos of playhead
         # on touch drag
         # if touch.y > (self.height-20):
         #     self.playhead_increment = touch.x - self.space*2
+        # startX = 20
+        # startY = 20
+        x, y = self.sb.start[0], self.sb.start[1]
+        self.sb.r.pos = [x,y]
+        self.sb.r.size = [touch.x-x,touch.y-y]
+        self.canvas.ask_update()
+        # print("x:{},y:{}".format(x,y))
+        # b = Rectangle(pos=[x,y],size=[touch.x-x, touch.y-y])
+        # c = Color(0,0,1, 0.1)
+        # self.canvas.add(c)
+        # self.canvas.add(b)
+        # self.canvas.ask_update()
+            # self.sb.r.pos = [x,y]
+            # self.sb.r.size = [touch.x,touch.y]
+
+        # Dim x As Integer = Math.Min(e.X, Me.pntStart.X)
+        # Dim y As Integer = Math.Min(e.Y, Me.pntStart.Y)
+        # Dim num3 As Integer = Math.Max(e.X, Me.pntStart.X)
+        # Dim num4 As Integer = Math.Max(e.Y, Me.pntStart.Y)
+        # Me.rcSelect = New Rectangle(x, y, (num3 - x), (num4 - y))
+
+        # Dim x As Integer = Math.Min(e.X, Me.pntStart.X)
+        # Dim y As Integer = Math.Min(e.Y, Me.pntStart.Y)
+        # Dim num3 As Integer = Math.Max(e.X, Me.pntStart.X)
+        # Dim num4 As Integer = Math.Max(e.Y, Me.pntStart.Y)
+        # Me.rcSelect = New Rectangle(x, y, (num3 - x), (num4 - y))
+        # Sele
         self.adjust_playhead(touch)
 
         if self.drag == True:
@@ -312,6 +357,20 @@ class SeqGridWidget(Widget):
         else:
             self.drag = False
 
+    def paint_stress_test(self, width, height):
+        # stress test with snapping blocks
+        info = Info()
+        with self.canvas:
+            for x in range(2000):
+                # Rectangle(pos=(randint(1,width),randint(0, height)), size=(5, 5))
+                rw, rh = randint(0, width), randint(0, height)
+                info.x, info.y = rw, rh
+                print(info.x, info.y)
+                box_size = self.space
+                ai = AudioItem("sounds/snare1.wav", 100, 100, 100, [rw - box_size/2, rh - box_size/2], [box_size, box_size])
+                # add to audio_item list
+                self.audio_items.append(ai)
+                self.new_check_snap_to_grid(ai, info)
        
 class SeqGridWidgetApp(App):
     def build(self):

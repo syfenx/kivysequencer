@@ -43,12 +43,14 @@ from kivy.core.window import Window
 Window.size = (2000, 1500)
 from kivy.clock import Clock
 from functools import partial
-# from aengine import AudioEngine, AudioMixer, AudioItem
-from aengine_thread import AudioEngine, AudioMixer, AudioItem
-# for x in range(120000):
-#     print("change back to aengine_thread")
+from aengine import AudioEngine, AudioMixer, AudioItem
+# from aengine_thread import AudioEngine, AudioMixer, AudioItem
+for x in range(120000):
+    print("change back to aengine_thread")
 
-from seq_widget import SeqGridWidget
+from seq_widget_edit import SeqGridWidget
+for x in range(120000):
+    print("switched to seq_widget_edit")
 
 APPNAME = "xSequencer"
 
@@ -68,8 +70,8 @@ class SequencerLayout(BoxLayout):
         self.tracks = []  # PUT THIS IN AENGINE CLASS
 
         # self.m = Metro(self.metro_val).play()
-        for x in range(100):
-            print("METRO IS DISABLED")
+        # for x in range(100):
+        #     print("METRO IS DISABLED")
         
         # self.tf = TrigFunc(self.m, self.trigged)
 
