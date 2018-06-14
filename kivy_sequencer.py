@@ -45,12 +45,12 @@ from kivy.clock import Clock
 from functools import partial
 from aengine import AudioEngine, AudioMixer, AudioItem
 # from aengine_thread import AudioEngine, AudioMixer, AudioItem
-for x in range(120000):
-    print("change back to aengine_thread")
+# for x in range(120000):
+#     print("change back to aengine_thread")
 
 from seq_widget_edit import SeqGridWidget
-for x in range(120000):
-    print("switched to seq_widget_edit")
+# for x in range(120000):
+#     print("switched to seq_widget_edit")
 
 APPNAME = "xSequencer"
 

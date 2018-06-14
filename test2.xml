@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+   <items>
+      <audioitem name="coolsnare" posX="44" posY="74">
+         <filename path="/sounds/snare1.wav"/>
+         <effect bal="0.4" damp="1.0" size="0.3" type="reverb"/>
+      </audioitem>
+      <audioitem name="kick2">
+         <filename path="/sounds/kick2.wav"/>
+      </audioitem>
+   </items>
+</data>
