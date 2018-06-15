@@ -159,18 +159,14 @@ class SeqGridWidget(Widget):
         #     self.playhead_increment=0
         # self.size is for testing inside the widget, Window.size[0]
         # is normal use
+
         if self.playhead_increment > self.size[0]:
             self.playhead_increment=0
         
         p = [30+self.playhead_increment,self.height,30+self.playhead_increment,0]
-        # print(p)
         self.ph.width = 2
         self.ph.points = p
-            # Line(points=p)
-            # self.playhead.playhead_line
-            # self.playhead.playhead_line.width=300
-            # print(self.playhead.playhead_line)
-            # self.playhead.moveX(self.playhead_incremen)
+
     def loop_func(self, loop):
         if loop:
                 Color(0,1,1)
@@ -188,6 +184,7 @@ class SeqGridWidget(Widget):
         else:
             self.canvas.remove(self.loops)
             self.loops.clear() 
+
     def show_audio_items_stats(self):
         print("*"*20)
         for item in self.audio_items:
@@ -202,6 +199,46 @@ class SeqGridWidget(Widget):
         and touch.y >=box.shape.pos[1] and touch.y <= box.shape.pos[1]+box.shape.size[1] and \
         touch.button == button_type
         return res
+
+    def delete_audio_item(self, touch, box, button):
+        if self.check_click(touch, box, button):
+            print("{} click".format(button))
+            self.selected_item = box
+            idx = self.audio_items.index(self.selected_item)
+            self.remove_widget(self.audio_items[idx])
+            # remove audio item (shape)
+            self.canvas.remove(self.audio_items[idx].shape)
+            # remove audio item
+            self.audio_items.remove(self.audio_items[idx])
+
+
+    def check_snap_to_grid(self, item, touch):
+        for line in self.grid.main_lines:
+            lineX = line.points[0]
+            lineY = line.points[1]
+            selShapeX = item.shape.pos[0]
+            selShapeY = item.shape.pos[1]
+
+            if touch.x > lineX and touch.x <= lineX + self.grid.space:
+                item.shape.pos = (lineX, selShapeY)
+
+            if touch.y > lineY and touch.y <= lineY + self.grid.space:
+                item.shape.pos = (selShapeX, lineY)
+
+    def sel_rect_check(self):
+        self.sel_items.clear()
+        for item in self.audio_items:
+            # print(item.shape)
+            x = item.shape.pos[0]
+            y = item.shape.pos[1]
+            if x > self.sb.r.pos[0] and x <= self.sb.r.pos[0]+self.sb.r.size[0]:
+                print("shape within selection bounds", item)
+                # clear list to remove selection unless shift is down etc
+                # self.sel_items.clear()
+                self.sel_items.append(item)
+
+        print(self.sel_items)
+
     def on_touch_down(self, touch):
         super(SeqGridWidget, self).on_touch_down(touch)
         if touch.button == 'left':
@@ -209,15 +246,6 @@ class SeqGridWidget(Widget):
             self.sb.start = touch.x, touch.y
             print(self.sb.start)
 
-            # pseudocode for selection box / drag as group
-            # for item in audio_items:
-                # if item is within bounds of selectionsbox_rect:
-                # item.color = selectedcolor
-                # selected_items.append(item)  #clear this list unless shift
-
-            # messy selection box, if rect sb is not in canvas children, add it and update
-            # pos and size
-        # if touch.button == 'right':
         if self.sel_status == True:
             if self.sb.r not in self.canvas.children:
                 c = get_color_from_hex("#5745f722")
@@ -231,28 +259,16 @@ class SeqGridWidget(Widget):
         # if playhead is being moved, don't place a block/rect
         if self.isPlayheadAdjust == False:
             for box in self.audio_items:
+                # delete item if right clicked on
+                self.delete_audio_item(touch, box, 'right')
+
                 if self.check_click(touch, box, 'left'):
                     self.drag = True
                     self.selected_item = box
                     print("selected item (in bounds, left click)",self.selected_item)
 
-                if self.check_click(touch, box, 'right'):
-                    print("right click")
-
-                    self.selected_item = box
-                    idx = self.audio_items.index(self.selected_item)
-                    self.remove_widget(self.audio_items[idx])
-                    self.audio_items[idx].clear_widgets()
-
-                    # remove audio item (shape)
-                    self.canvas.remove(self.audio_items[idx].shape)
-
-                    # remove audio item
-                    self.audio_items.remove(self.audio_items[idx])
-
-
             # if not dragging and not right button, add new audio item
-            if self.drag == False and touch.button != 'right':
+            if self.drag == False and touch.button != 'right' and self.sel_status == False:
                 with self.canvas:
                     box_size = self.grid.space
                     ai = AudioItem("sounds/snare1.wav", 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size, box_size])
@@ -274,96 +290,35 @@ class SeqGridWidget(Widget):
         if self.sb.r in self.canvas.children:
             self.canvas.remove(self.sb.r)
 
-    def check_snap_to_grid(self, item, touch):
-        for line in self.grid.main_lines:
-            lineX = line.points[0]
-            lineY = line.points[1]
-            selShapeX = item.shape.pos[0]
-            selShapeY = item.shape.pos[1]
-
-            if touch.x > lineX and touch.x <= lineX + self.grid.space:
-                item.shape.pos = (lineX, selShapeY)
-                item.text.pos = (item.shape.pos[0], item.shape.pos[1])
-
-            if touch.y > lineY and touch.y <= lineY + self.grid.space:
-                item.shape.pos = (selShapeX, lineY)
-                item.text.pos = (item.shape.pos[0], item.shape.pos[1])
-                # item.text.size = (32,32)
-
-            # if selShapeY > lineY + self.space/2 and selShapeY <= lineY + self.space:
-            #     item.shape.pos = (selShapeX, lineY)
-            #     item.text.pos = (item.shape.pos[0], item.shape.pos[1])
-
-            # # snap to vertical line within spacing px amount
-            # if selShapeX > lineX and selShapeX <= lineX + self.space-1:
-            #     item.shape.pos = (lineX, selShapeY)
-            #     item.text.pos = (item.shape.pos[0], item.shape.pos[1])
-            # # snap to horizontal line within spacing px amount
-            # elif selShapeY > lineY and selShapeY <= lineY + self.space-1:
-            #     item.shape.pos = (selShapeX, lineY)
-            #     item.text.pos = (item.shape.pos[0], item.shape.pos[1])
-
-    def sel_rect_check(self):
-        for item in self.audio_items:
-            # print(item.shape)
-            x = item.shape.pos[0]
-            y = item.shape.pos[1]
-            if x > self.sb.r.pos[0] and x <= self.sb.r.pos[0]+self.sb.r.size[0]:
-                print("shape within selection bounds", item)
-                # clear list to remove selection unless shift is down etc
-                # self.sel_items.clear()
-                self.sel_items.append(item)
-
-        print(self.sel_items)
-
     def on_touch_move(self, touch):
-        # if key is down then drag the group items in sel_items
-        # for item in self.sel_items:
-        #     item.shape.pos = [item.pos[0]+touch.x, item.pos[1]+touch.y]
-        # print(xStart, touch.x)
+        for box in self.audio_items:
+            self.delete_audio_item(touch, box, 'right')
 
-        # if mouse is less than grid height-20, change pos of playhead
-        # on touch drag
-        # if touch.y > (self.height-20):
-        #     self.playhead_increment = touch.x - self.space*2
-        # startX = 20
-        # startY = 20
         if self.sel_status == True:
             x, y = self.sb.start[0], self.sb.start[1]
             self.sb.r.pos = [x,y]
             self.sb.r.size = [touch.x-x,touch.y-y]
-        # self.canvas.ask_update()
-        # print("x:{},y:{}".format(x,y))
-        # b = Rectangle(pos=[x,y],size=[touch.x-x, touch.y-y])
-        # c = Color(0,0,1, 0.1)
-        # self.canvas.add(c)
-        # self.canvas.add(b)
-        # self.canvas.ask_update()
-            # self.sb.r.pos = [x,y]
-            # self.sb.r.size = [touch.x,touch.y]
 
-        # Dim x As Integer = Math.Min(e.X, Me.pntStart.X)
-        # Dim y As Integer = Math.Min(e.Y, Me.pntStart.Y)
-        # Dim num3 As Integer = Math.Max(e.X, Me.pntStart.X)
-        # Dim num4 As Integer = Math.Max(e.Y, Me.pntStart.Y)
-        # Me.rcSelect = New Rectangle(x, y, (num3 - x), (num4 - y))
-
-        # Dim x As Integer = Math.Min(e.X, Me.pntStart.X)
-        # Dim y As Integer = Math.Min(e.Y, Me.pntStart.Y)
-        # Dim num3 As Integer = Math.Max(e.X, Me.pntStart.X)
-        # Dim num4 As Integer = Math.Max(e.Y, Me.pntStart.Y)
-        # Me.rcSelect = New Rectangle(x, y, (num3 - x), (num4 - y))
-        # Sele
+        # enables mouse to grab playhead to move it
         self.adjust_playhead(touch)
 
         if self.drag == True:
             self.selected_item.shape.pos = (touch.x - self.selected_item.shape.size[0]/2, touch.y-self.selected_item.shape.size[1]/2)
-            self.selected_item.text.pos = (touch.x - self.selected_item.shape.size[0]/2, touch.y-self.selected_item.shape.size[1]/2)
             #print("drag " + str(self.selected_item.shape.pos))
             self.check_snap_to_grid(self.selected_item, touch)
         else:
             self.drag = False
 
+
+    def key_action(self, *args):
+        # monitor keypresses
+        print("key event: {}".format(list(args)))
+        if args[1] == 305:
+            print("ctrl")
+            self.sel_status = True
+        else:
+            self.sel_status = False
+    
     def paint_stress_test(self, width, height):
         # stress test with snapping blocks
         info = Info()
@@ -377,16 +332,6 @@ class SeqGridWidget(Widget):
                 # add to audio_item list
                 self.audio_items.append(ai)
                 self.check_snap_to_grid(ai, info)
-
-    def key_action(self, *args):
-        # monitor keypresses
-        print("key event: {}".format(list(args)))
-        if args[1] == 305:
-            print("ctrl")
-            self.sel_status = True
-        else:
-            self.sel_status = False
-    
        
 class SeqGridWidgetApp(App):
     def build(self):

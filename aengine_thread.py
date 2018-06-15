@@ -82,14 +82,16 @@ class AudioEngine(multiprocessing.Process):
         print("soundplayed")
 
 class AudioItem(Widget):
-    def __init__(self, filename, volume, pan, vel, pos, size):
+    def __init__(self, filename, volume, pan, velocity, pos, size):
         print("init audioitem")
         super(AudioItem, self).__init__()
         self.filename = filename
         self.volume = volume
         self.pan = pan
-        self.fx = []
-        self.vel = vel
+        self.effects = []
+        self.velocity = velocity
+        self.pos = pos
+        self.size = size
         print("sound might fail here because aengine doesn't have server booted")
         # self.sf = SfPlayer(self.filename, mul=0.3).stop()
         # self.sf2 = self.sf.mix(2).out()
@@ -97,21 +99,15 @@ class AudioItem(Widget):
         Color(0.4, uniform(0.3,1), uniform(0.3,1))
         # Color(0.4, 0.52, 0.74)
         # print(p.rgb)
-        self.size = (50,40)
-        self.shape = Rectangle(pos=pos, size=size)
+        # self.size = (50,40)
+        self.shape = Rectangle(pos=self.pos, size=self.size)
         # self.text = Label(text="{}".format(filename[7:]))
-        self.text = Label(text="{}".format(""))
         # self.add_widget(Label(text="testlabel"))
-        self.text.pos = (self.shape.pos[0], self.shape.pos[1])
+        # self.text.pos = (self.shape.pos[0], self.shape.pos[1])
     def play(self):
         self.sf.play()
     def setfn(self, path):
         self.sf.setPath(path)
-    def rem(self):
-        app = App.get_running_app()
-        app.root.remove_widget(self.text)
-        # self.remove_widget(self.text)
-        print("rem called")
 
 class AudioMixer(object):
     def __init__(self):
