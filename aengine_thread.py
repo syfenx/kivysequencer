@@ -108,6 +108,8 @@ class AudioItem(Widget):
         self.sf.play()
     def setfn(self, path):
         self.sf.setPath(path)
+    def set_pos(self, x, y):
+        self.pos = [x, y]
 
 class AudioMixer(object):
     def __init__(self):

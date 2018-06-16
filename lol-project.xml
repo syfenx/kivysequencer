@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+   <items>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="384" posY="864" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="544" posY="800" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="544" posY="832" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="576" posY="864" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="704" posY="864" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="864" posY="864" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="384" posY="832" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="384" posY="800" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="384" posY="768" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="384" posY="736" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="384" posY="704" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="384" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="416" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="448" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="480" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="544" posY="768" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="544" posY="736" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="544" posY="704" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="608" posY="864.0" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="640" posY="832" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="640" posY="800" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="640" posY="768" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="640" posY="736" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="640.0" posY="704" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="608" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="576" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="704" posY="832" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="704" posY="800" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="704" posY="736" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="704" posY="704" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="704" posY="768" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="704" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="736" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="768" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="800" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="864" posY="832" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="864" posY="800" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="864" posY="768" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="864" posY="736" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare1.wav" pan="100" posX="864" posY="672" sizeH="32" sizeW="32" velocity="100" volume="100"/>
+   </items>
+</data>

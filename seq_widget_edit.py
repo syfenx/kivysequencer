@@ -18,6 +18,7 @@ import multiprocessing
 import time
 from aengine_thread import AudioItem
 from helper_functions import Info
+from file_save_loader import write_project_file, read_project_file
 stress_test = False
 
 #TODO: select sound from sound palette
@@ -192,6 +193,7 @@ class SeqGridWidget(Widget):
             print("Block size", item.shape.size)
         print("Audio item count: ", len(self.audio_items))
         print("*"*20)
+
     def check_click(self, touch, box, button_type):
         # checks that we're in bounds when a button/rect is pressed
         # check for right or left buttons
@@ -220,10 +222,16 @@ class SeqGridWidget(Widget):
             selShapeY = item.shape.pos[1]
 
             if touch.x > lineX and touch.x <= lineX + self.grid.space:
-                item.shape.pos = (lineX, selShapeY)
+                item.shape.pos = [lineX, selShapeY]
+                # set_pos updates the actual shape coords so we can
+                # see it when saving the file
+                item.set_pos(lineX, selShapeY)
 
             if touch.y > lineY and touch.y <= lineY + self.grid.space:
-                item.shape.pos = (selShapeX, lineY)
+                item.shape.pos = [selShapeX, lineY]
+                # set_pos updates the actual shape coords so we can
+                # see it when saving the file
+                item.set_pos(selShapeX, lineY)
 
     def sel_rect_check(self):
         self.sel_items.clear()
@@ -318,6 +326,16 @@ class SeqGridWidget(Widget):
             self.sel_status = True
         else:
             self.sel_status = False
+
+        # if [s] is pressed, save the project file
+        if args[3] == 's':
+            write_project_file(self.audio_items, 'proj.xml')
+            print("Project saved...")
+
+        if args[3] == 'q':
+            read_project_file(self.audio_items, 'lol-project.xml', self.canvas)
+            print("Project loaded...")
+            # Rectangle(pos=[30,30], size=[400,400])
     
     def paint_stress_test(self, width, height):
         # stress test with snapping blocks
@@ -339,6 +357,7 @@ class SeqGridWidgetApp(App):
 
     def on_stop(self):
         print("app was stopped here")
+        # write_project_file(self.audio_)
 
 
 if __name__ == '__main__':

@@ -2,18 +2,20 @@ from xml.dom import minidom
 import xml.etree.ElementTree as ET
 
 from aengine_thread import AudioItem
+from kivy.graphics import Color, Line, Rectangle
+import math
 
-ai = AudioItem("sounds/snare1.wav", 100, 100, 100, [20,20], [32, 32])
+# ai = 
 
-sample_audio_items = []
-sample_audio_items.append(ai)
-sample_audio_items.append(ai)
-sample_audio_items.append(ai)
+# sample_audio_items = []
+# sample_audio_items.append(ai)
+# sample_audio_items.append(ai)
+# sample_audio_items.append(ai)
 
-print(sample_audio_items)
+# print(sample_audio_items)
 
-def read_project_file(filename):
-    tree = ET.parse('test2.xml')  
+def read_project_file(ai, filename, can):
+    tree = ET.parse(filename)  
     root = tree.getroot()
         #filename
         #volume
@@ -39,9 +41,22 @@ def read_project_file(filename):
             sizeW = subelem.attrib['sizeW']
             sizeH = subelem.attrib['sizeH']
 
-            print("filename", "[{}]".format(filename))
+            # print("filename", "[{}]".format(filename))
             print("posX", posX)
             print("posY", posY)
+
+            audioitem = AudioItem("sounds/snare1.wav", 100, 100, 100, [20,20], [32, 32])
+            ai.append(audioitem)
+
+            print("posX type is",type(posX))
+            x = int(float(posX))
+            y = int(float(posY))
+            w = int(float(sizeW))
+            h = int(float(sizeH))
+            
+            r = Rectangle(pos=[x, y], size=[w, h])
+            can.add(r)
+
 
             # check if we have a sub element aka a list of effects
             if len(subelem) > 1:
@@ -53,7 +68,7 @@ def read_project_file(filename):
             print("-"*20)
 
 
-read_project_file("demo_project.xml")
+# read_project_file("demo_project.xml")
 
 def write_project_file(audioitems, filename):
 
@@ -96,4 +111,4 @@ def write_project_file(audioitems, filename):
     myfile.write(mydata)  
 
 
-write_project_file(sample_audio_items, "test2.xml")
+# write_project_file(sample_audio_items, "test2.xml")
