@@ -4,6 +4,8 @@ import xml.etree.ElementTree as ET
 from aengine_thread import AudioItem
 from kivy.graphics import Color, Line, Rectangle
 import math
+import time
+
 
 # ai = 
 
@@ -45,8 +47,9 @@ def read_project_file(ai, filename, can):
             print("posX", posX)
             print("posY", posY)
 
-            audioitem = AudioItem("sounds/snare1.wav", 100, 100, 100, [20,20], [32, 32])
-            ai.append(audioitem)
+            with can:
+                audioitem = AudioItem(filename, volume, pan, velocity, [posX, posY], [sizeW, sizeH])
+                ai.append(audioitem)
 
             print("posX type is",type(posX))
             x = int(float(posX))
@@ -54,8 +57,8 @@ def read_project_file(ai, filename, can):
             w = int(float(sizeW))
             h = int(float(sizeH))
             
-            r = Rectangle(pos=[x, y], size=[w, h])
-            can.add(r)
+            # r = Rectangle(pos=[x, y], size=[w, h])
+            # can.add(r)
 
 
             # check if we have a sub element aka a list of effects
