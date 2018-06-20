@@ -28,6 +28,7 @@ from kivy.core.window import Window
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.recyclelayout import RecycleLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.popup import Popup
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelHeader, TabbedPanelItem
@@ -44,6 +45,8 @@ Window.size = (2000, 1500)
 from kivy.clock import Clock
 from functools import partial
 from aengine import AudioEngine, AudioMixer, AudioItem
+from file_dialog import *
+from file_save_loader import FileSystem
 # from aengine_thread import AudioEngine, AudioMixer, AudioItem
 # for x in range(120000):
 #     print("change back to aengine_thread")
@@ -53,6 +56,7 @@ from seq_widget_edit import SeqGridWidget
 #     print("switched to seq_widget_edit")
 
 APPNAME = "xSequencer"
+BASE_DIR = "/sounds/"
 
 class SequencerLayout(BoxLayout):
     def __init__(self, **kwargs):
@@ -74,6 +78,8 @@ class SequencerLayout(BoxLayout):
         #     print("METRO IS DISABLED")
         
         # self.tf = TrigFunc(self.m, self.trigged)
+        self.file_loader = FileLoader()
+        self.file_system = FileSystem()
 
         self.inc = 0
 
@@ -90,10 +96,19 @@ class SequencerLayout(BoxLayout):
         # print('trigged')
         app = App.get_running_app()
         self.ae.playsound("sounds/kick2.wav")
+        # self.ae.run()
         # app.root.Seqdget.move_playhead()
         self.sgr.move_playhead()
         # SeqGridWidget.move_playhead()
+class LoadDialog(FloatLayout):
+    load = ObjectProperty(None)
+    cancel = ObjectProperty(None)
 
+
+class SaveDialog(FloatLayout):
+    save = ObjectProperty(None)
+    text_input = ObjectProperty(None)
+    cancel = ObjectProperty(None)
 class Transport(BoxLayout):
     
     def button_about(self):
@@ -132,12 +147,22 @@ class Transport(BoxLayout):
         if button.state == "down":
             print("down")
             # app.root.sgr.loop = True
-            app.root.sgr.loop_func(True)
+            app.root.sgr.loop_bars.loop_func(True)
         else:
             # app.root.sgr.loop = False
-            app.root.sgr.loop_func(False)
+            app.root.sgr.loop_bars.loop_func(False)
             print("up")
 
+
+    def button_open_project(self):
+        print("project opened")
+        app = App.get_running_app()
+        app.root.file_loader.show_load()
+        
+    def button_save_project(self):
+        print("project saved")
+        app = App.get_running_app()
+        app.root.file_loader.show_save()
 
     def button_options(self):
         print("options pressed")
@@ -194,6 +219,9 @@ class Row(Button):
         print("sel", selectedsound)
         path = "sounds/" + selectedsound
         app.root.ae.playsound(path)
+
+        print("Selected sound is: ", BASE_DIR + selectedsound)
+        app.root.sgr.current_sound = BASE_DIR + selectedsound
 
 
 class FilenameLister(RecycleView):

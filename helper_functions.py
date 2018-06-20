@@ -3,10 +3,13 @@ class Info(object):
     x = 0
 y = 0
 
-
-
-
-
+def show_audio_items_stats(audio_items):
+    print("*"*20)
+    for item in audio_items:
+        print("Block pos", item.shape.pos)
+        print("Block size", item.shape.size)
+    print("Audio item count: ", len(audio_items))
+    print("*"*20)
 
 # # piano roll attempts
 #     self.start = 0

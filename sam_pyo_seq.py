@@ -81,10 +81,15 @@ class MyAppRoot(FloatLayout):
     def __init__(self, **kwargs):
         self.octave = 5
         super(MyAppRoot, self).__init__(**kwargs)
-       # self.server = Server(sr=44100, duplex=0, audio='jack').boot()
-        # self.server.setInOutDevice(4)
+        # self.server = Server(audio='jack').boot()
+
+        # self.server.deactivateMidi()
+        self.server = Server(audio="jack")
+        self.server.deactivateMidi()
+        self.server.boot().start()
+        # self.server.setInOutDevice(5)
         pa_list_devices()
-        # self.server.start()
+        self.server.start()
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
         self.MyButton = Button(text="btn1")

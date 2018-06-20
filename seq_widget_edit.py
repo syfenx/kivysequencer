@@ -17,8 +17,9 @@ from pyo import *
 import multiprocessing
 import time
 from aengine_thread import AudioItem
-from helper_functions import Info
-from file_save_loader import write_project_file, read_project_file
+from helper_functions import Info, show_audio_items_stats
+# from file_save_loader import write_project_file, read_project_file
+from kivy.properties import NumericProperty
 stress_test = False
 
 #TODO: select sound from sound palette
@@ -31,6 +32,7 @@ stress_test = False
 #TODO: waveform view
 #TODO: zoom gridlines
 #TODO: alt for sound pallette left slide out for sound selection
+#TODO: mouse - paint or single add block for both add/delete
 
 
 class Selection_Box(object):
@@ -39,15 +41,81 @@ class Selection_Box(object):
         self.r = Rectangle(pos=[x,y], size=[w,h])
 
 class PlayHead(Widget):
-    def __init__(self, height, location=40):
+    def __init__(self, height, start_location):
+        # self.playhead_line = Line(points=[location, self.height, location, 0])
+        # self.playhead_line.width = 6
+        # Playhead
+        b = NumericProperty(0)
         self.height = height
-        self.playhead_line = Line(points=[location, self.height, location, 0])
-        self.playhead_line.width = 2
+        self.ph = Line(points=[start_location, self.height, start_location, self.height])
+        self.ph.width = 6
+        self.inc = 0
+        self.playhead_increment = 0
+        self.isPlayheadAdjust = False
 
-    def moveX(self, increment):
-        self.playhead_line.points = [30+increment,self.height,30+increment,0]
-        Line.posX= (40)
-        print("moveX called")
+    def adjust_playhead(self, touch, grid):
+        if touch.y > (self.height-20):
+            self.isPlayheadAdjust = True
+            self.playhead_increment = touch.x - grid.space * 2
+            p = [touch.x, self.height, touch.x, 0]
+            # with self.canvas:
+            self.ph.points = p
+        else:
+            self.isPlayheadAdjust = False
+
+    # temporarily moves playhead on screen
+    def move_playhead(self, space_amount, dt):
+        """
+        moves playhead at x spacing amount
+        """
+        self.playhead_increment += space_amount
+
+        # if playhead reaches end of window width, loop back to beginning
+        # if self.playhead_increment > Window.size[0]:
+        #     self.playhead_increment=0
+        # self.size is for testing inside the widget, Window.size[0]
+        # is normal use
+
+        if self.playhead_increment > Window.size[0]:
+            self.playhead_increment=0
+        
+        p = [self.playhead_increment, self.height, self.playhead_increment, 0]
+        self.ph.width = 2
+        self.ph.points = p
+
+class LoopBars(object):
+    def __init__(self, width, height, canvas):
+        self.width = width
+        self.height = height
+        self.start = 0
+
+        self.canvas = canvas
+
+        self.loop = False
+        self.loops = InstructionGroup()
+
+    def loop_func(self, loop):
+        if loop:
+                loopL = Line(points=[30+20,self.height,30+20,0])
+                loopR = Line(points=[30+70,self.height,30+70,0])
+                handle_size=(20,20)
+                top_padding = 20
+                loopHandleL = Rectangle(pos=(loopL.points[0]-(handle_size[0]/2),self.height-top_padding), size=handle_size)
+                loopHandleR = Rectangle(pos=(loopR.points[0]-(handle_size[0]/2),self.height-top_padding), size=handle_size)
+                self.loops.add(Color(0,1,1))
+                self.loops.add(loopL)
+                self.loops.add(Color(1,0,1))
+                self.loops.add(loopR)
+                self.loops.add(loopHandleL)
+                self.loops.add(loopHandleR)
+                self.canvas.add(self.loops)
+        else:
+            self.canvas.remove(self.loops)
+            self.loops.clear() 
+
+    def drag_loop_bar(self, loop):
+        # only move loop line if dragged by handle
+        pass
 
 class GridLines(object):
     def __init__(self, width):
@@ -81,7 +149,10 @@ class GridLines(object):
             # horizontal line
             L = Line(points=[0, start, width, start])
             self.main_lines.append(L)
-
+    def get_grid_spacing(self):
+        return self.space
+    def set_grid_spacing(self, spacing):
+        self.space = spacing
 
 class SeqGridWidget(Widget):
     def __init__(self, **kwargs):
@@ -93,8 +164,8 @@ class SeqGridWidget(Widget):
         # Change main widget background color
         Window.clearcolor=get_color_from_hex("#444444")
 
-        Clock.schedule_interval(lambda dt: self.move_playhead(), 0.001)
 
+        # self.write_project_file = write_project_file
         # main widget
         self.audio_items = []
         self.size_hint=(None,None)
@@ -107,16 +178,15 @@ class SeqGridWidget(Widget):
         self.selected_item = None
 
         # Playhead
-        self.ph = Line(points=[30,self.height,30, self.height])
-        self.ph.width = 6
-        self.inc = 0
-        self.playhead_increment = 0
-        self.isPlayheadAdjust = False
+        self.playhead = PlayHead(self.height, 230)
+        # self.ph = Line(points=[30,self.height,30, self.height])
+        # self.ph.width = 6
+        # self.inc = 0
+        # self.playhead_increment = 0
+        # self.isPlayheadAdjust = False
 
         # loop bars
-        self.loop = False
-        self.loops = InstructionGroup()
-
+        self.loop_bars = LoopBars(self.width, self.height, self.canvas)
 
         # selection box
         self.sb = Selection_Box(0,0,50,50)
@@ -124,15 +194,18 @@ class SeqGridWidget(Widget):
         # sel_items contains the current selected item group
         # (a list of audio_items)
         self.sel_items = []
-        self.sel_status = ""
+        self.sel_status = False
         self.grid = GridLines(self.width)
+
+        # current sound selected in left hand browser
+        self.current_sound = ""
 
         with self.canvas:
             self.grid.draw_grid(self.grid.amt,self.grid.start,self.width,self.height, self.grid.space)
 
             # Change playhead color to pink
             Color(0.96, 0.52, 0.74)
-        self.canvas.add(self.ph)
+        self.canvas.add(self.playhead.ph)
 
         with self.canvas:
             # top grey horizontal bar
@@ -141,58 +214,11 @@ class SeqGridWidget(Widget):
             Rectangle(pos=(0,self.height-20), size=(self.width, 20))
 
 
-    def adjust_playhead(self, touch):
-        if touch.y > (self.height-20):
-            self.isPlayheadAdjust = True
-            self.playhead_increment = touch.x - self.grid.space * 2
-            p = [touch.x, self.height, touch.x, 0]
-            with self.canvas:
-                self.ph.points = p
-        else:
-            self.isPlayheadAdjust = False
+        # Clock.schedule_interval(lambda dt: self.playhead.move_playhead(), 0.001)
+        Clock.schedule_interval(partial(self.playhead.move_playhead, self.grid.get_grid_spacing()), 0.250)
 
-    # temporarily moves playhead on screen
-    def move_playhead(self):
-        self.playhead_increment += self.grid.space
 
-        # if playhead reaches end of window width, loop back to beginning
-        # if self.playhead_increment > Window.size[0]:
-        #     self.playhead_increment=0
-        # self.size is for testing inside the widget, Window.size[0]
-        # is normal use
 
-        if self.playhead_increment > self.size[0]:
-            self.playhead_increment=0
-        
-        p = [30+self.playhead_increment,self.height,30+self.playhead_increment,0]
-        self.ph.width = 2
-        self.ph.points = p
-
-    def loop_func(self, loop):
-        if loop:
-                Color(0,1,1)
-                loopL = Line(points=[30+20,self.height,30+20,0])
-                loopR = Line(points=[30+70,self.height,30+70,0])
-                handle_size=(20,20)
-                top_padding = 20
-                loopHandleL = Rectangle(pos=(loopL.points[0]-(handle_size[0]/2),self.height-top_padding), size=handle_size)
-                loopHandleR = Rectangle(pos=(loopR.points[0]-(handle_size[0]/2),self.height-top_padding), size=handle_size)
-                self.loops.add(loopL)
-                self.loops.add(loopR)
-                self.loops.add(loopHandleL)
-                self.loops.add(loopHandleR)
-                self.canvas.add(self.loops)
-        else:
-            self.canvas.remove(self.loops)
-            self.loops.clear() 
-
-    def show_audio_items_stats(self):
-        print("*"*20)
-        for item in self.audio_items:
-            print("Block pos", item.shape.pos)
-            print("Block size", item.shape.size)
-        print("Audio item count: ", len(self.audio_items))
-        print("*"*20)
 
     def check_click(self, touch, box, button_type):
         # checks that we're in bounds when a button/rect is pressed
@@ -254,18 +280,21 @@ class SeqGridWidget(Widget):
             self.sb.start = touch.x, touch.y
             print(self.sb.start)
 
+        # if ctrl is down
         if self.sel_status == True:
+            # if rect not in canvas
             if self.sb.r not in self.canvas.children:
                 c = get_color_from_hex("#5745f722")
                 self.sb.r.pos = [touch.x, 0]
+                # add color, add shape of rect
                 self.canvas.add(Color(*c))
                 self.canvas.add(self.sb.r)
 
         # enables dragging of playhead
-        self.adjust_playhead(touch)
+        self.playhead.adjust_playhead(touch, self.grid)
 
         # if playhead is being moved, don't place a block/rect
-        if self.isPlayheadAdjust == False:
+        if self.playhead.isPlayheadAdjust == False:
             for box in self.audio_items:
                 # delete item if right clicked on
                 self.delete_audio_item(touch, box, 'right')
@@ -279,18 +308,20 @@ class SeqGridWidget(Widget):
             if self.drag == False and touch.button != 'right' and self.sel_status == False:
                 with self.canvas:
                     box_size = self.grid.space
-                    ai = AudioItem("sounds/snare1.wav", 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size, box_size])
+                    ai = AudioItem(self.current_sound, 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size, box_size])
                     # add to audio_item list
                     self.audio_items.append(ai)
                     self.check_snap_to_grid(ai, touch)
 
             # debugging info / stress test
-            self.show_audio_items_stats()
+            show_audio_items_stats(self.audio_items)
             if stress_test:
                 self.paint_stress_test(self.width, self.height)
 
     def on_touch_up(self, touch):
         self.drag = False
+
+        # gather all items in selection rectangle, add to self.sel_items
         self.sel_rect_check()
 
         # change selection box to false but keep selection in self.sel_items
@@ -299,18 +330,21 @@ class SeqGridWidget(Widget):
             self.canvas.remove(self.sb.r)
 
     def on_touch_move(self, touch):
+        # if right click is held down and dragged, delete items
         for box in self.audio_items:
             self.delete_audio_item(touch, box, 'right')
 
+        # create selection box
         if self.sel_status == True:
             x, y = self.sb.start[0], self.sb.start[1]
             self.sb.r.pos = [x,y]
             self.sb.r.size = [touch.x-x,touch.y-y]
 
         # enables mouse to grab playhead to move it
-        self.adjust_playhead(touch)
+        self.playhead.adjust_playhead(touch, self.grid)
 
         if self.drag == True:
+            # drag selected item while snapping to grid
             self.selected_item.shape.pos = (touch.x - self.selected_item.shape.size[0]/2, touch.y-self.selected_item.shape.size[1]/2)
             #print("drag " + str(self.selected_item.shape.pos))
             self.check_snap_to_grid(self.selected_item, touch)
@@ -320,6 +354,7 @@ class SeqGridWidget(Widget):
 
     def key_action(self, *args):
         # monitor keypresses
+        key = args[3]
         print("key event: {}".format(list(args)))
         if args[1] == 305:
             print("ctrl")
@@ -328,11 +363,11 @@ class SeqGridWidget(Widget):
             self.sel_status = False
 
         # if [s] is pressed, save the project file
-        if args[3] == 's':
+        if key == 's':
             write_project_file(self.audio_items, 'proj.xml')
             print("Project saved...")
 
-        if args[3] == 'q':
+        if key == 'q':
             read_project_file(self.audio_items, 'lol-project.xml', self.canvas)
             print("Project loaded...")
             # Rectangle(pos=[30,30], size=[400,400])

@@ -14,6 +14,12 @@
   id:transport
   BoxLayout:
     Button:
+      text:"Open Project"
+      on_press:root.button_open_project()
+    Button:
+      text:"Save Project"
+      on_press:root.button_save_project()
+    Button:
       text:"Options"
       on_press:root.button_options()
     Button:
@@ -229,3 +235,52 @@
   orientation: "horizontal"
   padding: 20
   spacing: 20
+
+
+<LoadDialog>:
+  BoxLayout:
+    size: root.size
+    pos: root.pos
+    orientation: "vertical"
+    FileChooserListView:
+      id: filechooser
+
+      BoxLayout:
+        size_hint_y: None
+        height: 30
+        Button:
+          text: "Cancel"
+          on_release: root.cancel()
+
+        Button:
+          text: "Load"
+          on_release: root.load(filechooser.path, filechooser.selection, app.root.sgr.audio_items, app.root.sgr.canvas)
+
+
+<SaveDialog>:
+  text_input: text_input
+  BoxLayout:
+    size: root.size
+    pos: root.pos
+    orientation: "vertical"
+    FileChooserListView:
+      id: filechooser
+      on_selection: text_input.text = self.selection and self.selection[0] or ''
+
+    TextInput:
+      id: text_input
+      size_hint_y: None
+      height: 30
+      multiline: False
+
+    BoxLayout:
+      size_hint_y: None
+      height: 30
+      Button:
+        text: "Cancel"
+        on_release: root.cancel()
+
+      Button:
+        text: "Save"
+        # on_release: app.root.file_system.write_project_file(app.root.sgr.audio_items, filechooser.path+text_input.text)
+        on_release: root.save(filechooser.path, text_input.text, app.root.sgr.audio_items)
