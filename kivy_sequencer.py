@@ -18,6 +18,8 @@ from kivy.app import App
 from kivy.utils import get_color_from_hex
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+# this is so seqgridwidget can be resized without crashing
+# this does not affect the filebrowser scrolling when loading/saving a file
 from scrollview_edit import ScrollView
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
@@ -58,6 +60,14 @@ from seq_widget_edit import SeqGridWidget
 APPNAME = "xSequencer"
 BASE_DIR = "/sounds/"
 
+INF = float('inf')
+class NumericInput(GridLayout):
+    value = NumericProperty(0)
+    min = NumericProperty(-INF)
+    max = NumericProperty(INF)
+    step = NumericProperty(1)
+    text = StringProperty()
+    
 class SequencerLayout(BoxLayout):
     def __init__(self, **kwargs):
         super(SequencerLayout, self).__init__(**kwargs)
@@ -249,7 +259,7 @@ class SequencerApp(App):
         sequencer_layout = SequencerLayout()
         sequencer_layout_grid = GridLayout(cols=1, id="rowcontainer")
         transport = Transport()
-        transport.size=(200,60)
+        transport.size=(200,100)
 
 
         # mixer_panel_grid

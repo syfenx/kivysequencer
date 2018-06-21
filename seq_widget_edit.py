@@ -33,6 +33,9 @@ stress_test = False
 #TODO: zoom gridlines
 #TODO: alt for sound pallette left slide out for sound selection
 #TODO: mouse - paint or single add block for both add/delete
+#TODO: check for filetype when loading a project, error handle this
+#TODO: grid zooming, pattern / song mode
+#TODO: piano roll with velocity
 
 
 class Selection_Box(object):
@@ -126,7 +129,10 @@ class GridLines(object):
         self.amt = (self.width / self.space) 
         self.main_lines = []
 
+        self.instGroup = InstructionGroup()
+
     def draw_grid(self, amt, start, width, height, space):
+        self.main_lines.clear()
         Color(1, 1, 1)
         # lines that are added to main_lines could be put in
         # an InstructionGroup and edited later for line spacing
@@ -351,7 +357,7 @@ class SeqGridWidget(Widget):
         else:
             self.drag = False
 
-
+    space = 0
     def key_action(self, *args):
         # monitor keypresses
         key = args[3]
@@ -364,12 +370,33 @@ class SeqGridWidget(Widget):
 
         # if [s] is pressed, save the project file
         if key == 's':
-            write_project_file(self.audio_items, 'proj.xml')
-            print("Project saved...")
-
+            # write_project_file(self.audio_items, 'proj.xml')
+            # print("Project saved...")
+            print("disabled shortcut")
         if key == 'q':
-            read_project_file(self.audio_items, 'lol-project.xml', self.canvas)
-            print("Project loaded...")
+            # read_project_file(self.audio_items, 'lol-project.xml', self.canvas)
+            # print("Project loaded...")
+            print("disabled shortcut")
+
+
+        if key == '=':
+            print("increase grid")
+            with self.canvas:
+                self.canvas.clear()
+                # update instruction group with lines then draw to canvas
+                self.grid.draw_grid(100, 0, self.width, self.height, self.space)
+                print("self.size[0] is: ", self.size[0])
+            self.grid.set_grid_spacing(self.space)
+            self.space+=1
+        if key == '-':
+            with self.canvas:
+                self.canvas.clear()
+                self.grid.draw_grid(100, 0, self.width, self.height, self.space)
+            self.grid.set_grid_spacing(self.space)
+            self.space-=1
+
+    def draw_grid(self, amt, start, width, height, space):
+            print("decrease grid")
             # Rectangle(pos=[30,30], size=[400,400])
     
     def paint_stress_test(self, width, height):
