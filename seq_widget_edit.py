@@ -21,7 +21,7 @@ from helper_functions import Info, show_audio_items_stats
 # from file_save_loader import write_project_file, read_project_file
 from kivy.properties import NumericProperty
 stress_test = False
-
+import theme
 #TODO: select sound from sound palette
 #TODO: loop bar dragging
 #TODO: snap to grid lines - done
@@ -45,6 +45,7 @@ class Selection_Box(object):
 
 class PlayHead(Widget):
     def __init__(self, height, start_location):
+        #TODO playhead snapping to grid
         # self.playhead_line = Line(points=[location, self.height, location, 0])
         # self.playhead_line.width = 6
         # Playhead
@@ -59,7 +60,7 @@ class PlayHead(Widget):
     def adjust_playhead(self, touch, grid):
         if touch.y > (self.height-20):
             self.isPlayheadAdjust = True
-            self.playhead_increment = touch.x - grid.space * 2
+            self.playhead_increment = touch.x #- grid.space * 2
             p = [touch.x, self.height, touch.x, 0]
             # with self.canvas:
             self.ph.points = p
@@ -216,7 +217,7 @@ class SeqGridWidget(Widget):
         with self.canvas:
             # top grey horizontal bar
             # controls playhead skipping / looping markers
-            Color(0.43, 0.43, 0.43, 1)
+            Color(*theme.playhead_bar_top)
             Rectangle(pos=(0,self.height-20), size=(self.width, 20))
 
 

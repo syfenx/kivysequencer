@@ -263,7 +263,6 @@ class SequencerApp(App):
 
 
         # mixer_panel_grid
-        global mixer_panel_grid
         mixer_panel_grid = GridLayout(
             rows=1, padding=10, spacing=10, size_hint=(None, 1))
         mixer_panel_grid.bind(minimum_width=mixer_panel_grid.setter('width'))

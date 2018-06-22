@@ -22,9 +22,14 @@ class AudioEngine(object):
         # self.engine.setInOutDevice(5)
         # self.m = Metro(.125)
     def start(self):
-        self.engine.boot()
         # self.engine.setJackAuto(False, False) 
-        self.engine.start()
+
+
+        # enable audio
+        # self.engine.boot()
+        # self.engine.start()
+        for x in range(200):
+            print("Audio is disabled in aengine.py")
         print("Engine started - Sample Rate: {sr} - Channels: {chan} - Buffer Size: {buf} - Duplex: {dup}".format(sr=self.sr,chan=self.nchnls,buf=self.buffersize,dup=self.duplex))
     def record(self):
         self.engine.recordOptions(dur=100, filename="output_13.wav", fileformat=0, sampletype=1)
