@@ -1,18 +1,41 @@
 #:kivy 1.10.0
 #:import theme theme
+<Spacer@Label>:
+  size_hint_x:None
+  width: 10
+<PlayheadControlBar>:
+  canvas.before:
+    Color:
+      # rgba: theme.playhead_control_bar
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  size_hint_y: None
+  height: 30
+  # background_color: theme.playhead_control_bar
+<TransportButton@Button>:
+  background_normal:''
+  background_color: theme.transport_buttons
 <NumericInput>:
+  canvas.before:
+    Color:
+      rgba: theme.transport_tick_buttons
+    Rectangle:
+      size: self.size
+      pos: self.pos
   orientation: 'vertical'
-  cols: 2
+  cols: 4
   text: "hello"
-  # padding: 3
-  spacing: 5
+  padding: 4
+  spacing: 0
   Label:
     text:root.text
   Button:
-    # background_color: .2, .2, .2, 2
+    background_normal:''
     background_color: theme.numeric_buttons
+    foreground_color: 0,0,0,1
     size_hint_x: None
-    width:32
+    width:20
     text: '+'
     disabled: root.value >= root.max
     on_release:
@@ -24,9 +47,11 @@
     foreground_color: 1,1,1,1
     font_size: 20
   Button:
-    background_color: .2, .2, .2, 2
+    background_normal:''
+    background_color: theme.numeric_buttons
+    foreground_color: 0,0,0,1
     size_hint_x: None
-    width:32
+    width:20
     text: '-'
     disabled: root.value <= root.min
     on_release:
@@ -45,6 +70,7 @@
   padding:10
   id:transport
   BoxLayout:
+    spacing:10
     NumericInput:
       text:"BPM"
     NumericInput:
@@ -53,33 +79,33 @@
       text:"BPB"
     NumericInput:
       text:"OCT"
-    Button:
+    Spacer:
+    TransportButton:
       text:"Open Project"
       on_press:root.button_open_project()
-    Button:
+    TransportButton:
       text:"Save Project"
       on_press:root.button_save_project()
-    Button:
+    TransportButton:
       text:"Options"
       on_press:root.button_options()
-    Button:
+    TransportButton:
       text:"<"
       on_press:root.button_stop()
-    Button:
+    TransportButton:
       text:"Play"
       on_press:root.button_play()
-    Button:
+    TransportButton:
       text:"Stop"
       on_press:root.button_stop()
-    Button:
+    TransportButton:
       text:">"
       on_press:root.button_stop()
     ToggleButton:
+      background_normal:''
       text:"Loop"
       on_press:root.button_loop(self)
-    Slider:
-      min: 1
-      max: 100
+      background_color: theme.transport_buttons
     Label:
       text:"Bpm"
     TextInput:
@@ -92,7 +118,10 @@
       multiline: False
       size:(50, 10)
       on_text_validate: root.bpm_text(self)
+    Spacer:
     Button:
+      background_normal:''
+      background_color: theme.about_button
       text:"About"
       on_press:root.button_about()
 <Row>:

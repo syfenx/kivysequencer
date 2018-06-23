@@ -247,6 +247,9 @@ class StepPanel_grid_base(GridLayout):
 class StepRowPanel(GridLayout):
     pass
 
+class PlayheadControlBar(GridLayout):
+    pass
+
 class SequencerApp(App):
     def __init__(self, **kwargs):
         super(SequencerApp, self).__init__(**kwargs)
@@ -259,8 +262,9 @@ class SequencerApp(App):
         sequencer_layout = SequencerLayout()
         sequencer_layout_grid = GridLayout(cols=1, id="rowcontainer")
         transport = Transport()
-        transport.size=(200,100)
+        transport.size=(200,60)
 
+        playhead_control_bar = PlayheadControlBar()
 
         # mixer_panel_grid
         mixer_panel_grid = GridLayout(
@@ -313,6 +317,7 @@ class SequencerApp(App):
                 file_list.data.insert(0, {'value': file})
         sequencer_layout.add_widget(file_list)
         sequencer_layout_grid.add_widget(transport)
+        # sequencer_layout_grid.add_widget(playhead_control_bar)
 
         sequencer_layout_grid.add_widget(step_base)
 
