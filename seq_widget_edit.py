@@ -16,6 +16,7 @@ from kivy.core.window import Window
 from pyo import *
 import multiprocessing
 import time
+from random import randint
 from aengine_thread import AudioItem
 from helper_functions import Info, show_audio_items_stats
 # from file_save_loader import write_project_file, read_project_file
@@ -37,6 +38,34 @@ import theme
 #TODO: grid zooming, pattern / song mode
 #TODO: piano roll with velocity
 
+class Seq2(object):
+    # for each tick check if audio item, check each audio item stats such as
+    # velocity / note etc
+    def __init__(self, ai):
+        self.ai = ai
+        self.tick = 0
+    def tickframe(self, ai, grid):
+        self.tick+=1.0
+        print("tick: ", self.tick)
+        # for i in self.ai:
+        #     i.play
+        # self.ai[self.tick].play()
+        # for item in App.get_running_app().root.sgr.audio_items:
+        #     print(item.filename)
+        fsec = self.tick/44100
+        curr_min = fsec/60
+        curr_msec = (fsec*1000)%1000
+        curr_sec = fsec%60
+
+        print("{:.3f}:{}:{}".format(curr_min, curr_sec, curr_msec))
+        tick = self.tick
+        ticks_per_beat = grid.ticks_per_beat
+        beats_per_bar = grid.beats_per_bar
+        curr_bar = int(tick/(ticks_per_beat*beats_per_bar));
+        curr_beat = int(tick/ticks_per_beat)%ticks_per_beat;
+        curr_step = float(tick - int(tick)/ticks_per_beat*ticks_per_beat);
+
+        print("bar: {}, beat: {}, step: {}".format(curr_bar, curr_beat, curr_step))
 
 class Selection_Box(object):
     def __init__(self, x, y, w, h):
@@ -129,57 +158,90 @@ class GridLines(object):
         self.start = 0
         self.amt = (self.width / self.space) 
         self.main_lines = []
-
+        self.beats_per_bar = 16
+        self.ticks_per_beat = 4
         self.instGroup = InstructionGroup()
 
-    def draw_grid(self, amt, start, width, height, space):
-        self.main_lines.clear()
-        Color(1, 1, 1)
+    def draw_grid(self, amt, start, width, height, space, audio_items, canvas):
+        # the lines are drawn incorrectly, the horiz lines get drawn on top of
+        # vertical lines
+
+        # self.main_lines.clear()
         # lines that are added to main_lines could be put in
         # an InstructionGroup and edited later for line spacing
+
+        # Draw horizontal lines on the bottom first
+        self.main_lines.clear()
+        startax = start
+        for ax in range(int(amt)):
+            Color(*theme.grid_line_tick_color)
+            # Color(1,0,0,1)
+            # horizontal line
+            L = Line(points=[0, startax, width, startax])
+            self.main_lines.append(L)
+            startax+=space
+
+        # Draw vertical lines on top of horizontal lines
         for x in range(int(amt)):
-            if x % 4 == 0:
-                # every 4th line is darker
+            if x % self.beats_per_bar == 0:
                 # vertical line - thick width
-                Color(.2,.2,.2)
-                L = Line(points=[0+start, height, 0+start, 0])
+                # Color(.2,.2,.2)
+                Color(*theme.grid_bar_color)
+                L = Line(points=[start, height, start, 0])
+                L.width = 2.5
+                self.main_lines.append(L)
+            elif x % self.ticks_per_beat == 0:
+                # vertical line - thick width
+                Color(*theme.grid_bar_sep_color)
+                L = Line(points=[start, height, start, 0])
                 L.width = 2
                 self.main_lines.append(L)
             else:
-                Color(.2,.2,.2)
+                Color(*theme.grid_line_tick_color)
                 # vertical line - normal width
-                L = Line(points=[0+start, height, 0+start, 0])
+                L = Line(points=[start, height, start, 0])
                 self.main_lines.append(L)
             start+=space
+        
+        print("mainlines len: ", len(self.main_lines))
 
-            Color(.2,.2,.2)
-            # horizontal line
-            L = Line(points=[0, start, width, start])
-            self.main_lines.append(L)
+
+        # this will redraw audio_items so they are not lost when redrawing grid
+        for item in audio_items:
+            Color(*item.color)
+            canvas.add(item.shape)
+
     def get_grid_spacing(self):
         return self.space
     def set_grid_spacing(self, spacing):
         self.space = spacing
+    def set_beats_per_bar(self, beats):
+        self.beats_per_bar = beats
+    def set_ticks_per_beat(self, ticks):
+        self.ticks_per_beat = ticks
 
 class SeqGridWidget(Widget):
     def __init__(self, **kwargs):
         super(SeqGridWidget, self).__init__(**kwargs)
 
         # handle keypresses
-        Window.bind(on_key_down=self.key_action)
+        Window.bind(on_key_down=self.key_action_down)
+        Window.bind(on_key_up=self.key_action_up)
 
         # Change main widget background color
-        Window.clearcolor=get_color_from_hex("#444444")
+        Window.clearcolor=get_color_from_hex("#3c3c3c")
 
 
         # self.write_project_file = write_project_file
         # main widget
         self.audio_items = []
         self.size_hint=(None,None)
-        self.size=(11100,11100)
+        self.size=(11000,11000)
         self.width = self.size[0]
         self.height = self.size[1]
 
+
+        self.seq = Seq2(self.audio_items)
 
         self.drag = False
         self.selected_item = None
@@ -206,9 +268,10 @@ class SeqGridWidget(Widget):
 
         # current sound selected in left hand browser
         self.current_sound = ""
-
+        self.old_shapes=[]
         with self.canvas:
-            self.grid.draw_grid(self.grid.amt,self.grid.start,self.width,self.height, self.grid.space)
+            self.grid.draw_grid(self.grid.amt,self.grid.start,self.width,self.height, self.grid.space, self.audio_items, self.canvas)
+
 
             # Change playhead color to pink
             Color(0.96, 0.52, 0.74)
@@ -222,9 +285,16 @@ class SeqGridWidget(Widget):
 
 
         # Clock.schedule_interval(lambda dt: self.playhead.move_playhead(), 0.001)
-        Clock.schedule_interval(partial(self.playhead.move_playhead, self.grid.get_grid_spacing()), 0.250)
+        # Clock.schedule_interval(partial(self.playhead.move_playhead, self.grid.get_grid_spacing()), 0.250)
+        bpm = 120
+        seconds_in_tick = 1.0/(bpm/60.0*self.grid.space)
+        frames_per_pixel = seconds_in_tick*44100/2
+        print("seconds_in_tick", seconds_in_tick)
+        Clock.schedule_interval(partial(self.playhead.move_playhead, 1), 0.125)
+        # print(seconds_in_tick)
 
-
+        Clock.schedule_interval(lambda dt: self.seq.tickframe(self.audio_items, self.grid), 0.125)
+        # Clock.schedule_interval(partial(self.seq.tickframe(), self.audio_items), 0.250)
 
 
     def check_click(self, touch, box, button_type):
@@ -272,7 +342,16 @@ class SeqGridWidget(Widget):
             # print(item.shape)
             x = item.shape.pos[0]
             y = item.shape.pos[1]
-            if x > self.sb.r.pos[0] and x <= self.sb.r.pos[0]+self.sb.r.size[0]:
+
+            sbX = self.sb.r.pos[0]
+            sbY = self.sb.r.pos[1]
+
+            sbW = self.sb.r.size[0]
+            sbH = self.sb.r.size[1]
+
+            # if x >= self.sb.r.pos[0] and x <= self.sb.r.pos[0]+self.sb.r.size[0] and \
+            # y >= self.sb.r.pos[1] and y <= self.sb.r.pos[1]+self.sb.r.size[1]:
+            if x >= sbX and x <= sbX + sbW and y <= sbY and y >= sbY + sbH:
                 print("shape within selection bounds", item)
                 # clear list to remove selection unless shift is down etc
                 # self.sel_items.clear()
@@ -286,6 +365,14 @@ class SeqGridWidget(Widget):
             print("startvalue", self.sb.start)
             self.sb.start = touch.x, touch.y
             print(self.sb.start)
+
+
+
+        # add a copy of the old list of item locations
+        # self.old_shapes.append(self.sel_items)
+        self.old_shapes.clear()
+        for item in self.sel_items:
+            self.old_shapes.append(item)
 
         # if ctrl is down
         if self.sel_status == True:
@@ -329,14 +416,29 @@ class SeqGridWidget(Widget):
         self.drag = False
 
         # gather all items in selection rectangle, add to self.sel_items
-        self.sel_rect_check()
+        # self.sel_rect_check()
 
         # change selection box to false but keep selection in self.sel_items
-        self.sel_status = False
+        #self.sel_status = False
         if self.sb.r in self.canvas.children:
             self.canvas.remove(self.sb.r)
 
     def on_touch_move(self, touch):
+        # if ctrl is held down, allow a selection box
+        if self.sel_status:
+            self.sel_rect_check()
+
+        # self.old_shapes.clear()
+        for c, item in enumerate(self.sel_items):
+            # self.old_shapes.append(item)
+            # xOld, yOld = item.shape.pos[0]+touch.x, item.shape.pos[1]+touch.y
+            # idx = self.old_shapes.index(item)
+            # item.shape.pos = randint(touch.x,touch.x+20) + touch.x, touch.y
+            posX, posY = item.shape.pos[0], item.shape.pos[1]
+
+            item.shape.pos = touch.x + posX, touch.y + posY
+            print("Shape: x:{} y:{} | Touch: x:{} y:{}".format(posX, posY, touch.x, touch.y))
+
         # if right click is held down and dragged, delete items
         for box in self.audio_items:
             self.delete_audio_item(touch, box, 'right')
@@ -358,16 +460,19 @@ class SeqGridWidget(Widget):
         else:
             self.drag = False
 
+    def key_action_up(self, *args):
+        print("key event up: {}".format(list(args)))
+        if args[1] == 305:
+            print("ctrl")
+            self.sel_status = False
     space = 0
-    def key_action(self, *args):
+    def key_action_down(self, *args):
         # monitor keypresses
         key = args[3]
-        print("key event: {}".format(list(args)))
+        print("key event down: {}".format(list(args)))
         if args[1] == 305:
             print("ctrl")
             self.sel_status = True
-        else:
-            self.sel_status = False
 
         # if [s] is pressed, save the project file
         if key == 's':
@@ -381,20 +486,40 @@ class SeqGridWidget(Widget):
 
 
         if key == '=':
-            print("increase grid")
+            self.grid.beats_per_bar+=4
             with self.canvas:
                 self.canvas.clear()
                 # update instruction group with lines then draw to canvas
-                self.grid.draw_grid(100, 0, self.width, self.height, self.space)
-                print("self.size[0] is: ", self.size[0])
-            self.grid.set_grid_spacing(self.space)
-            self.space+=1
+                self.grid.draw_grid(self.grid.amt, 0, self.width, self.height, self.grid.space, self.audio_items, self.canvas)
+                self.grid.set_beats_per_bar(self.grid.beats_per_bar)
+            # self.space+=1
         if key == '-':
+            self.grid.beats_per_bar-=4
             with self.canvas:
                 self.canvas.clear()
-                self.grid.draw_grid(100, 0, self.width, self.height, self.space)
-            self.grid.set_grid_spacing(self.space)
-            self.space-=1
+                self.grid.draw_grid(self.grid.amt, 0, self.width, self.height, self.grid.space, self.audio_items, self.canvas)
+                self.grid.set_beats_per_bar(self.grid.beats_per_bar)
+                # self.space+=1
+            # self.grid.set_grid_spacing(self.space)
+            # self.space-=1
+        if key == '0':
+            with self.canvas:
+                self.grid.ticks_per_beat+=1
+                self.grid.beats_per_bar+=self.grid.ticks_per_beat
+                self.canvas.clear()
+                self.grid.draw_grid(self.grid.amt, 0, self.width, self.height, self.grid.space, self.audio_items, self.canvas)
+                self.grid.set_ticks_per_beat(self.grid.ticks_per_beat)
+                self.grid.set_beats_per_bar(self.grid.beats_per_bar)
+                print("0 was pressed")
+        if key == '9':
+            with self.canvas:
+                self.grid.ticks_per_beat-=1
+                self.grid.beats_per_bar-=self.grid.ticks_per_beat
+                self.canvas.clear()
+                self.grid.draw_grid(self.grid.amt, 0, self.width, self.height, self.grid.space, self.audio_items, self.canvas)
+                self.grid.set_ticks_per_beat(self.grid.ticks_per_beat)
+                self.grid.set_beats_per_bar(self.grid.beats_per_bar)
+                print("9 was pressed")
 
     def draw_grid(self, amt, start, width, height, space):
             print("decrease grid")
@@ -413,7 +538,39 @@ class SeqGridWidget(Widget):
                 # add to audio_item list
                 self.audio_items.append(ai)
                 self.check_snap_to_grid(ai, info)
-       
+
+# class MyKeyboardListener(Widget):
+
+#     def __init__(self, **kwargs):
+#         super(MyKeyboardListener, self).__init__(**kwargs)
+#         self._keyboard = Window.request_keyboard(
+#             self._keyboard_closed, self, 'text')
+#         if self._keyboard.widget:
+#             # If it exists, this widget is a VKeyboard object which you can use
+#             # to change the keyboard layout.
+#             pass
+#         self._keyboard.bind(on_key_down=self._on_keyboard_down)
+
+#     def _keyboard_closed(self):
+#         print('My keyboard have been closed!')
+#         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+#         self._keyboard = None
+
+#     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+#         print('The key', keycode, 'have been pressed')
+#         print(' - text is %r' % text)
+#         print(' - modifiers are %r' % modifiers)
+
+#         # Keycode is composed of an integer + a string
+#         # If we hit escape, release the keyboard
+#         if keycode[1] == 'escape':
+#             keyboard.release()
+
+#         # Return True to accept the key. Otherwise, it will be used by
+#         # the system.
+#         return True
+
+
 class SeqGridWidgetApp(App):
     def build(self):
         return SeqGridWidget()

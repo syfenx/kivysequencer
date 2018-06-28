@@ -3,6 +3,37 @@
 <Spacer@Label>:
   size_hint_x:None
   width: 10
+<TimingBar>:
+  GridLayout:
+    rows: 2
+    cols: 6
+    spacing: 0
+    padding:0
+    size_hint_x: .2
+    Label:
+      text:"Min"
+    Label:
+      text:"Sec"
+    Label:
+      text:"Msec"
+    Label:
+      text:"Bar"
+    Label:
+      text:"Beat"
+    Label:
+      text:"Step"
+    Label:
+      text:"000"
+    Label:
+      text:"00"
+    Label:
+      text:"000"
+    Label:
+      text:"000"
+    Label:
+      text:"00"
+    Label:
+      text:"0.0"
 <PlayheadControlBar>:
   canvas.before:
     Color:
@@ -15,7 +46,11 @@
   # background_color: theme.playhead_control_bar
 <TransportButton@Button>:
   background_normal:''
+  background_down:''
   background_color: theme.transport_buttons
+  color: theme.transport_buttons_text
+  font_size:'12sp'
+  size_hint_x: .5
 <NumericInput>:
   canvas.before:
     Color:
@@ -24,10 +59,11 @@
       size: self.size
       pos: self.pos
   orientation: 'vertical'
-  cols: 4
+  cols: 2
   text: "hello"
-  padding: 4
-  spacing: 0
+  padding: 2 
+  spacing: 2
+  size_hint_x:.4
   Label:
     text:root.text
   Button:
@@ -45,7 +81,8 @@
     text: str(root.value)
     background_color: .2,.2,.2,1
     foreground_color: 1,1,1,1
-    font_size: 20
+    font_size: 12
+    multiline: False
   Button:
     background_normal:''
     background_color: theme.numeric_buttons
@@ -72,14 +109,52 @@
   BoxLayout:
     spacing:10
     NumericInput:
+      min: 10
+      max: 999
       text:"BPM"
     NumericInput:
       text:"TPB"
+      min: 1
+      max: 12
     NumericInput:
       text:"BPB"
+      min: 1
+      max: 24
     NumericInput:
       text:"OCT"
-    Spacer:
+      min: 1
+      max: 8
+    # Spacer:
+    GridLayout:
+      rows: 2
+      cols: 6
+      spacing: 0
+      padding:0
+      # size_hint_x: .2
+      Label:
+        text:"Min"
+      Label:
+        text:"Sec"
+      Label:
+        text:"Msec"
+      Label:
+        text:"Bar"
+      Label:
+        text:"Beat"
+      Label:
+        text:"Step"
+      Label:
+        text:"000"
+      Label:
+        text:"00"
+      Label:
+        text:"000"
+      Label:
+        text:"000"
+      Label:
+        text:"00"
+      Label:
+        text:"0.0"
     TransportButton:
       text:"Open Project"
       on_press:root.button_open_project()
@@ -102,30 +177,34 @@
       text:">"
       on_press:root.button_stop()
     ToggleButton:
+      size_hint_x: .5
       background_normal:''
       text:"Loop"
       on_press:root.button_loop(self)
       background_color: theme.transport_buttons
-    Label:
-      text:"Bpm"
-    TextInput:
-      background_color: .33,.33,.33,1
-      foreground_color: 1,1,1,1
-      input_filter: "int"
-      text:"120"
-      size_hint: (None, 1)
-      font_size: "24sp"
-      multiline: False
-      size:(50, 10)
-      on_text_validate: root.bpm_text(self)
-    Spacer:
+    # Label:
+    #   text:"Bpm"
+    # TextInput:
+    #   background_color: .33,.33,.33,1
+    #   foreground_color: 1,1,1,1
+    #   input_filter: "int"
+    #   text:"120"
+    #   size_hint: (None, 1)
+    #   font_size: "24sp"
+    #   multiline: False
+    #   size:(50, 10)
+    #   on_text_validate: root.bpm_text(self)
     Button:
+      size_hint_x: .5
       background_normal:''
       background_color: theme.about_button
       text:"About"
       on_press:root.button_about()
 <Row>:
-  background_color: .33,.33,.33,1 
+  background_normal:''
+  background_color: theme.left_file_browser_row
+  color: theme.left_file_browser_row_text_color
+  font_size: '22sp'
   value: ''
   size_hint_y:.1
   height:10
@@ -152,7 +231,7 @@
     Color:
       # rgba: .15, .15, .15, 1
       # rgba: theme.Default['transport_buttons']
-      rgba: theme.background_color
+      rgba: theme.main_window_background_color
     Rectangle:
       size: self.size
       pos: self.pos

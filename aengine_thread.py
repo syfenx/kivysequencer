@@ -92,14 +92,15 @@ class AudioItem(Widget):
         self.velocity = velocity
         self.pos = pos
         self.size = size
+        self.color = (0.4, uniform(0.3,1), uniform(0.3,1))
         print("sound might fail here because aengine doesn't have server booted")
         # self.sf = SfPlayer(self.filename, mul=0.3).stop()
         # self.sf2 = self.sf.mix(2).out()
 
-        Color(0.4, uniform(0.3,1), uniform(0.3,1))
         # Color(0.4, 0.52, 0.74)
         # print(p.rgb)
         # self.size = (50,40)
+        Color(*self.color)
         self.shape = Rectangle(pos=self.pos, size=self.size)
         # self.text = Label(text="{}".format(filename[7:]))
         # self.add_widget(Label(text="testlabel"))

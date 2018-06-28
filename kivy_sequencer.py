@@ -46,18 +46,19 @@ from kivy.core.window import Window
 Window.size = (2000, 1500)
 from kivy.clock import Clock
 from functools import partial
-from aengine import AudioEngine, AudioMixer, AudioItem
+# from aengine import AudioEngine, AudioMixer, AudioItem
 from file_dialog import *
 from file_save_loader import FileSystem
-# from aengine_thread import AudioEngine, AudioMixer, AudioItem
+from aengine_thread import AudioEngine, AudioMixer, AudioItem
 # for x in range(120000):
 #     print("change back to aengine_thread")
+import theme
 
 from seq_widget_edit import SeqGridWidget
 # for x in range(120000):
 #     print("switched to seq_widget_edit")
 
-APPNAME = "xSequencer"
+APPNAME = "Sequencer"
 BASE_DIR = "/sounds/"
 
 INF = float('inf')
@@ -66,8 +67,10 @@ class NumericInput(GridLayout):
     min = NumericProperty(-INF)
     max = NumericProperty(INF)
     step = NumericProperty(1)
-    text = StringProperty()
+    # text = StringProperty()
     
+class TimingBar(GridLayout):
+    pass
 class SequencerLayout(BoxLayout):
     def __init__(self, **kwargs):
         super(SequencerLayout, self).__init__(**kwargs)
@@ -125,7 +128,7 @@ class Transport(BoxLayout):
         print("about pressed")
         cont = GridLayout(cols=1)
         about_txt = "{appname} " \
-        "blah blah blah" \
+        "Created 6/23/18" \
         "blah blah blah" \
         "blah blah blah" \
         "blah blah blah" \
@@ -262,7 +265,7 @@ class SequencerApp(App):
         sequencer_layout = SequencerLayout()
         sequencer_layout_grid = GridLayout(cols=1, id="rowcontainer")
         transport = Transport()
-        transport.size=(200,60)
+        transport.size=(200,80)
 
         playhead_control_bar = PlayheadControlBar()
 
@@ -271,12 +274,23 @@ class SequencerApp(App):
             rows=1, padding=10, spacing=10, size_hint=(None, 1))
         mixer_panel_grid.bind(minimum_width=mixer_panel_grid.setter('width'))
 
+        # Effects box
+        effects_box = BoxLayout(orientation='vertical')
+        effects_box.add_widget(Label(text="Reverb"))
+        effects_box.add_widget(Label(text="Echo"))
+        effects_box.add_widget(Label(text="Delay"))
+        effects_box.add_widget(Label(text="Distortion"))
+
         # Vertical buttons in mixer_panel_grid
         anothergrid = GridLayout(cols=1,size_hint_x=None, width=200)
+        anothergrid.canvas.add(Color(*theme.about_button))
+        anothergrid.canvas.add(Rectangle(pos=anothergrid.pos,size=anothergrid.size))
         anothergrid.bind(minimum_width=anothergrid.setter('width'))
         # for x in range(10):
-        anothergrid.add_widget(Button(text="anothergrid", size_hint_x=1))
-        anothergrid.add_widget(Label(text="anothergrid", size_hint_y=2))
+        # anothergrid.add_widget(Button(text="anothergrid", size_hint_x=1))
+        # anothergrid.add_widget(Label(text="anothergrid", size_hint_y=2))
+        anothergrid.add_widget(Slider(orientation='vertical'))
+        anothergrid.add_widget(effects_box)
             # anothergrid.add_widget(Label(text="anothergrid", size_hint_x=1))
 
         # add anothergrid to mixer_panel_grid
@@ -291,6 +305,10 @@ class SequencerApp(App):
 
         # Add mixer_panel_grid to mixer_base (Scrollview)
         mixer_base.add_widget(mixer_panel_grid)
+
+        # use this later for sizing / hiding / showing the panel
+        # mixer_base.size_hint_y = None
+        # mixer_base.height = 0
         
         step_base = ScrollView(
             size_hint=(1,1),
@@ -327,13 +345,15 @@ class SequencerApp(App):
             # Add number of mixer panels per track added
             # mixer_panel_grid.add_widget(anothergrid)
             mixer_panel_grid.add_widget(
-                Button(
-                    text="MIXERPANEL \n" + str(sample_filename_list[i]),
+                Label(
+                    text="Mix Panel \n" + str(sample_filename_list[i]),
                     height=220,
                     width=150,
                     size_hint_x=None))
             
-            mixer_panel_grid.add_widget(BoxLayout())
+            
+            # mixer_panel_grid.add_widget(effects_box)
+            # mixer_panel_grid.add_widget(BoxLayout())
 
         sequencer_layout_grid.add_widget(mixer_base)
         sequencer_layout.add_widget(sequencer_layout_grid)

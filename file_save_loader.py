@@ -6,13 +6,15 @@ from kivy.graphics import Color, Line, Rectangle
 import math
 import time
 
+from kivy.app import App
 class FileSystem(object):
     def read_project_file(self, ai, filename, can):
         tree = ET.parse(filename)  
         root = tree.getroot()
             # filename, volume, pan, effects, velocity, posX, posY, sizeW, sizeH
-
         # all item attributes
+        # can.clear()
+        # App.get_running_app().root.sgr.draw_grid(100,3,1000,1000,10)
         for elem in root:  
             for subelem in elem:
                 # basic attributes to an audio item
