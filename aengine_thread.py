@@ -19,6 +19,8 @@ class AudioEngine(multiprocessing.Process):
         self.buffersize = 512
         self.duplex = 0
         self.pitch = pitch
+
+        self.server = Server(audio="jack")
         # self.engine = Server(sr=self.sr, nchnls=self.nchnls, buffersize=self.buffersize, duplex=self.duplex)
         #jack_control stop - don't
         #jackd -d alsa -d hw:USB -P -p 1024 -r 44100 - don't
@@ -27,34 +29,37 @@ class AudioEngine(multiprocessing.Process):
 
         # self.engine.setInOutDevice(5)
         # self.m = Metro(.125)
-    # def start(self):
-    #     self.engine.boot()
-    #     # self.engine.setJackAuto(False, False) 
-    #     self.engine.start()
-    #     print("Engine started - Sample Rate: {sr} - Channels: {chan} - Buffer Size: {buf} - Duplex: {dup}".format(sr=self.sr,chan=self.nchnls,buf=self.buffersize,dup=self.duplex))
-    def run(self):
-        self.server = Server(audio="jack")
+    def start(self):
+        # self.engine.boot()
+        # self.engine.setJackAuto(False, False) 
+        # self.engine.start()
+
         self.server.deactivateMidi()
         self.server.boot().start()
+        # print("Engine started - Sample Rate: {sr} - Channels: {chan} - Buffer Size: {buf} - Duplex: {dup}".format(sr=self.sr,chan=self.nchnls,buf=self.buffersize,dup=self.duplex))
+    # def run(self):
+    #     self.server = Server(audio="jack")
+    #     self.server.deactivateMidi()
+    #     self.server.boot().start()
         
-        # 200 randomized band-limited square wave oscillators.
-        self.amp = Fader(fadein=5, mul=0.01).play()
-        lo, hi = midiToHz((self.pitch - 0.1, self.pitch + 0.1))
-        self.fr = Randi(lo, hi, [random.uniform(.2, .4) for i in range(200)])
-        self.sh = Randi(0.1, 0.9, [random.uniform(.2, .4) for i in range(200)])
-        # self.osc = LFO(self.fr, sharp=self.sh, type=2, mul=self.amp).out()
+    #     # 200 randomized band-limited square wave oscillators.
+    #     self.amp = Fader(fadein=5, mul=0.01).play()
+    #     lo, hi = midiToHz((self.pitch - 0.1, self.pitch + 0.1))
+    #     self.fr = Randi(lo, hi, [random.uniform(.2, .4) for i in range(200)])
+    #     self.sh = Randi(0.1, 0.9, [random.uniform(.2, .4) for i in range(200)])
+    #     # self.osc = LFO(self.fr, sharp=self.sh, type=2, mul=self.amp).out()
 
-        # self.sf = SfPlayer("sounds/snare1.wav", mul=0.3).mix(2).out()
-        self.sf = SfPlayer("sounds/snare1.wav", mul=0.3).stop()
-        self.sf2 = self.sf.mix(2).out()
+    #     # self.sf = SfPlayer("sounds/snare1.wav", mul=0.3).mix(2).out()
+    #     self.sf = SfPlayer("sounds/snare1.wav", mul=0.3).stop()
+    #     self.sf2 = self.sf.mix(2).out()
 
-        for x in range(5):
-            self.sf.play()
-            # self.sf.play()
-            # SfPlayer("sounds/snare1.wav", mul=0.3).mix(2).out()
-            time.sleep(0.1)
-        # time.sleep(30) # Play for 30 seconds.
-        # self.server.stop()
+    #     for x in range(5):
+    #         self.sf.play()
+    #         # self.sf.play()
+    #         # SfPlayer("sounds/snare1.wav", mul=0.3).mix(2).out()
+    #         time.sleep(0.1)
+    #     # time.sleep(30) # Play for 30 seconds.
+    #     # self.server.stop()
 
     def record(self):
         self.engine.recordOptions(dur=100, filename="output_13.wav", fileformat=0, sampletype=1)
@@ -94,8 +99,8 @@ class AudioItem(Widget):
         self.size = size
         self.color = (0.4, uniform(0.3,1), uniform(0.3,1))
         print("sound might fail here because aengine doesn't have server booted")
-        # self.sf = SfPlayer(self.filename, mul=0.3).stop()
-        # self.sf2 = self.sf.mix(2).out()
+        self.sf = SfPlayer(self.filename, mul=0.3).stop()
+        self.sf2 = self.sf.mix(2).out()
 
         # Color(0.4, 0.52, 0.74)
         # print(p.rgb)
@@ -106,6 +111,8 @@ class AudioItem(Widget):
         # self.add_widget(Label(text="testlabel"))
         # self.text.pos = (self.shape.pos[0], self.shape.pos[1])
     def play(self):
+        self.sf = SfPlayer(self.filename, mul=0.3).stop()
+        self.sf2 = self.sf.mix(2).out()
         self.sf.play()
     def setfn(self, path):
         self.sf.setPath(path)

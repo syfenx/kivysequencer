@@ -13,7 +13,11 @@ from functools import partial
 from kivy.graphics.instructions import InstructionGroup
 from kivy.utils import get_color_from_hex
 from kivy.core.window import Window
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.floatlayout import FloatLayout
 from pyo import *
+
+from kivy.animation import Animation
 import multiprocessing
 import time
 from random import randint
@@ -23,6 +27,7 @@ from helper_functions import Info, show_audio_items_stats
 from kivy.properties import NumericProperty
 stress_test = False
 import theme
+# from kivy_sequencer import TimingBar
 #TODO: select sound from sound palette
 #TODO: loop bar dragging
 #TODO: snap to grid lines - done
@@ -38,26 +43,37 @@ import theme
 #TODO: grid zooming, pattern / song mode
 #TODO: piano roll with velocity
 
+
 class Seq2(object):
     # for each tick check if audio item, check each audio item stats such as
     # velocity / note etc
     def __init__(self, ai):
+        self.bpm = 120
         self.ai = ai
         self.tick = 0
-    def tickframe(self, ai, grid):
-        self.tick+=1.0
-        print("tick: ", self.tick)
+        self.tickclock = 0
+    def get_bpm_time(self):
+        return self.bpm *0.0001
+    def tickframe(self, ai, grid, playhead):
+        self.tick+=0.125
+        # self.tick+=self.bpm*0.001
+
+        # print("bpm to dec", 125*0.0001)
+        # print("tick: ", self.tick)
         # for i in self.ai:
         #     i.play
         # self.ai[self.tick].play()
         # for item in App.get_running_app().root.sgr.audio_items:
         #     print(item.filename)
+        # timingbar.ids.step.text
+        # App.get_running_app().root.timingbar.step.text="s"
+
         fsec = self.tick/44100
         curr_min = fsec/60
         curr_msec = (fsec*1000)%1000
         curr_sec = fsec%60
 
-        print("{:.3f}:{}:{}".format(curr_min, curr_sec, curr_msec))
+        # print("{:.2f}:{:.2f}:{:.2f}".format(curr_min, curr_sec, curr_msec))
         tick = self.tick
         ticks_per_beat = grid.ticks_per_beat
         beats_per_bar = grid.beats_per_bar
@@ -65,7 +81,49 @@ class Seq2(object):
         curr_beat = int(tick/ticks_per_beat)%ticks_per_beat;
         curr_step = float(tick - int(tick)/ticks_per_beat*ticks_per_beat);
 
-        print("bar: {}, beat: {}, step: {}".format(curr_bar, curr_beat, curr_step))
+        # print("bar: {}, beat: {}, step: {}".format(curr_bar, curr_beat, curr_step))
+
+
+
+        # tick = tick
+        # self.ticks_per_beat
+        hours = int(tick / 3600)
+        mins = int((tick % 3600) / 60)
+        secs = int(tick % 60)
+        millis = int((tick * 1000) % 1000)
+
+        # MIN / SEC / MSEC
+        App.get_running_app().root.timingbar.ids.min.text=str(mins)
+        App.get_running_app().root.timingbar.ids.sec.text=str(secs)
+        App.get_running_app().root.timingbar.ids.msec.text=str(millis)
+        # BAR / BEAT / STEP
+        App.get_running_app().root.timingbar.ids.bar.text=str(curr_bar)
+        App.get_running_app().root.timingbar.ids.beat.text=str(curr_beat)
+        App.get_running_app().root.timingbar.ids.step.text=str(curr_step)
+
+
+        # print(playhead.ph.pos[0])
+        for item in ai:
+            # print("tickframe item", item.shape.pos)
+            if playhead.ph.points[0] == item.shape.pos[0]:
+                print("HIT A BLOCK")
+                item.play()
+
+class Side_Panel(FloatLayout):
+    def __init__(self, **kwargs):
+        super(Side_Panel, self).__init__(**kwargs)
+        # anim = Animation(x=300, y=0, t='in_quad', duration=0.2)
+        # anim.start(self)
+    def on_touch_down(self, touch):
+        pass
+        # if self.pos[0] == -300:
+        #     anim = Animation(x=0, y=0, t='in_quad', duration=0.2)
+        #     anim.start(self)
+        # else:
+        #     anim = Animation(x=-300, y=0, t='in_quad', duration=0.2)
+        #     anim.start(self)
+        # for i in range(1,25):
+        #     self.add_widget(Label(text="{}".format(i)))
 
 class Selection_Box(object):
     def __init__(self, x, y, w, h):
@@ -89,7 +147,7 @@ class PlayHead(Widget):
     def adjust_playhead(self, touch, grid):
         if touch.y > (self.height-20):
             self.isPlayheadAdjust = True
-            self.playhead_increment = touch.x #- grid.space * 2
+            self.playhead_increment = touch.x
             p = [touch.x, self.height, touch.x, 0]
             # with self.canvas:
             self.ph.points = p
@@ -109,7 +167,10 @@ class PlayHead(Widget):
         # self.size is for testing inside the widget, Window.size[0]
         # is normal use
 
-        if self.playhead_increment > Window.size[0]:
+        # if self.playhead_increment > Window.size[0]:
+        #     self.playhead_increment=0
+        # repeat playhead for 16 beats
+        if self.playhead_increment > (16*32)-1:
             self.playhead_increment=0
         
         p = [self.playhead_increment, self.height, self.playhead_increment, 0]
@@ -150,11 +211,12 @@ class LoopBars(object):
         # only move loop line if dragged by handle
         pass
 
-class GridLines(object):
-    def __init__(self, width):
+class GridLines(Widget):
+    def __init__(self, width, **kwargs):
         # grid
+        super(GridLines, self).__init__(**kwargs)
         self.width = width
-        self.space = 32
+        self.space = 16
         self.start = 0
         self.amt = (self.width / self.space) 
         self.main_lines = []
@@ -162,6 +224,9 @@ class GridLines(object):
         self.ticks_per_beat = 4
         self.instGroup = InstructionGroup()
 
+        with self.canvas:
+            Color(1,0,0,1)
+            Rectangle(pos=(400,400),size=(10000,10000))
     def draw_grid(self, amt, start, width, height, space, audio_items, canvas):
         # the lines are drawn incorrectly, the horiz lines get drawn on top of
         # vertical lines
@@ -187,19 +252,19 @@ class GridLines(object):
                 # vertical line - thick width
                 # Color(.2,.2,.2)
                 Color(*theme.grid_bar_color)
-                L = Line(points=[start, height, start, 0])
+                L = Line(points=[start*2, height, start*2, 0])
                 L.width = 2.5
                 self.main_lines.append(L)
             elif x % self.ticks_per_beat == 0:
                 # vertical line - thick width
                 Color(*theme.grid_bar_sep_color)
-                L = Line(points=[start, height, start, 0])
+                L = Line(points=[start*2, height, start*2, 0])
                 L.width = 2
                 self.main_lines.append(L)
             else:
                 Color(*theme.grid_line_tick_color)
                 # vertical line - normal width
-                L = Line(points=[start, height, start, 0])
+                L = Line(points=[start*2, height, start*2, 0])
                 self.main_lines.append(L)
             start+=space
         
@@ -210,6 +275,7 @@ class GridLines(object):
         for item in audio_items:
             Color(*item.color)
             canvas.add(item.shape)
+
 
     def get_grid_spacing(self):
         return self.space
@@ -231,7 +297,6 @@ class SeqGridWidget(Widget):
         # Change main widget background color
         Window.clearcolor=get_color_from_hex("#3c3c3c")
 
-
         # self.write_project_file = write_project_file
         # main widget
         self.audio_items = []
@@ -242,6 +307,8 @@ class SeqGridWidget(Widget):
 
 
         self.seq = Seq2(self.audio_items)
+        # self.side_panel = Side_Panel()
+        # self.add_widget(self.side_panel)
 
         self.drag = False
         self.selected_item = None
@@ -286,14 +353,22 @@ class SeqGridWidget(Widget):
 
         # Clock.schedule_interval(lambda dt: self.playhead.move_playhead(), 0.001)
         # Clock.schedule_interval(partial(self.playhead.move_playhead, self.grid.get_grid_spacing()), 0.250)
-        bpm = 120
-        seconds_in_tick = 1.0/(bpm/60.0*self.grid.space)
-        frames_per_pixel = seconds_in_tick*44100/2
+        bpm = 174
+        seconds_in_tick = 1.0/(bpm/60.0*self.grid.ticks_per_beat)
         print("seconds_in_tick", seconds_in_tick)
-        Clock.schedule_interval(partial(self.playhead.move_playhead, 1), 0.125)
+        frames_per_pixel = seconds_in_tick*44100/self.grid.space
+        print("seconds_in_tick", seconds_in_tick)
+        t = self.seq.get_bpm_time()
+        # time = 0.0125
+        # time = 0.0125
+
+        # MOVE THE PLAYHEAD AT EACH BEAT SIZE and change the 32 value based on grid zoom
+        Clock.schedule_interval(partial(self.playhead.move_playhead, 16), seconds_in_tick)
+        # Clock.schedule_interval(partial(self.playhead.move_playhead, 1), t)
         # print(seconds_in_tick)
 
-        Clock.schedule_interval(lambda dt: self.seq.tickframe(self.audio_items, self.grid), 0.125)
+        # Clock.schedule_interval(lambda dt: self.seq.tickframe(self.audio_items, self.grid), t)
+        Clock.schedule_interval(lambda dt: self.seq.tickframe(self.audio_items, self.grid, self.playhead), seconds_in_tick)
         # Clock.schedule_interval(partial(self.seq.tickframe(), self.audio_items), 0.250)
 
 
@@ -324,7 +399,8 @@ class SeqGridWidget(Widget):
             selShapeX = item.shape.pos[0]
             selShapeY = item.shape.pos[1]
 
-            if touch.x > lineX and touch.x <= lineX + self.grid.space:
+            # self.grid.space*2 is so the snap works with the wider item size
+            if touch.x > lineX and touch.x <= lineX + self.grid.space*2:
                 item.shape.pos = [lineX, selShapeY]
                 # set_pos updates the actual shape coords so we can
                 # see it when saving the file
@@ -402,11 +478,24 @@ class SeqGridWidget(Widget):
             if self.drag == False and touch.button != 'right' and self.sel_status == False:
                 with self.canvas:
                     box_size = self.grid.space
-                    ai = AudioItem(self.current_sound, 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size, box_size])
+                    app = App.get_running_app()
+                    # if self.current_sound is not None:
+                    ai = AudioItem(self.current_sound, 100, 100, 100, [touch.x - (box_size*2)/2, touch.y - box_size/2], [box_size*2, box_size])
+                    # else:
+                        # ai = AudioItem('sounds/snare1.wav', 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size, box_size])
                     # add to audio_item list
                     self.audio_items.append(ai)
                     self.check_snap_to_grid(ai, touch)
 
+                    # app = App.get_running_app()
+                    # print(self.text)
+                    # selectedsound = self.text
+                    # print("sel", selectedsound)
+                    # path = "sounds/" + selectedsound
+                    # app.root.ae.playsound(path)
+
+                    # print("Selected sound is: ", BASE_DIR + selectedsound)
+                    # app.root.sgr.current_sound = BASE_DIR + selectedsound
             # debugging info / stress test
             show_audio_items_stats(self.audio_items)
             if stress_test:

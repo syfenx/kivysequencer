@@ -18,9 +18,11 @@ from kivy.app import App
 from kivy.utils import get_color_from_hex
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+
 # this is so seqgridwidget can be resized without crashing
 # this does not affect the filebrowser scrolling when loading/saving a file
 from scrollview_edit import ScrollView
+
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -32,6 +34,7 @@ from kivy.uix.recycleboxlayout import RecycleBoxLayout
 from kivy.uix.recyclelayout import RecycleLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.togglebutton import ToggleButton
+from kivy.animation import Animation
 from kivy.uix.popup import Popup
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelHeader, TabbedPanelItem
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty, ListProperty
@@ -59,7 +62,12 @@ from seq_widget_edit import SeqGridWidget
 #     print("switched to seq_widget_edit")
 
 APPNAME = "Sequencer"
-BASE_DIR = "/sounds/"
+BASE_DIR = "sounds/"
+
+class TimingBar(GridLayout):
+    # step = StringProperty()
+    pass
+
 
 INF = float('inf')
 class NumericInput(GridLayout):
@@ -69,8 +77,7 @@ class NumericInput(GridLayout):
     step = NumericProperty(1)
     # text = StringProperty()
     
-class TimingBar(GridLayout):
-    pass
+    
 class SequencerLayout(BoxLayout):
     def __init__(self, **kwargs):
         super(SequencerLayout, self).__init__(**kwargs)
@@ -78,11 +85,17 @@ class SequencerLayout(BoxLayout):
         self.am = AudioMixer()
         self.ae.start()
         # self.ae.run()
-        self.bpm = 120
+        self.bpm = 200
         self.ticks = 4 
         self.metro_val = (60000 / self.bpm / self.ticks) * 0.001
+        print(self.metro_val, "bpm")
         self.sgr = SeqGridWidget()
+        self.timingbar = TimingBar()
+        self.timingbar.ids.step.text="hey"
+            # print(item)
         self.loop = False
+
+        self.current_sound=""
 
         self.tracks = []  # PUT THIS IN AENGINE CLASS
 
@@ -235,7 +248,7 @@ class Row(Button):
 
         print("Selected sound is: ", BASE_DIR + selectedsound)
         app.root.sgr.current_sound = BASE_DIR + selectedsound
-
+        app.root.current_sound = BASE_DIR + selectedsound
 
 class FilenameLister(RecycleView):
     pass
@@ -266,7 +279,9 @@ class SequencerApp(App):
         sequencer_layout_grid = GridLayout(cols=1, id="rowcontainer")
         transport = Transport()
         transport.size=(200,80)
-
+        timingbar = sequencer_layout.timingbar
+        timingbar.ids.step.text="arstrsts"
+        transport.add_widget(timingbar)
         playhead_control_bar = PlayheadControlBar()
 
         # mixer_panel_grid
@@ -320,6 +335,7 @@ class SequencerApp(App):
         # Sequencer widget (seq_widget.py)
         # SeqWidgetObject = SeqGridWidget()
         SeqWidgetObject = sequencer_layout.sgr
+        # side_panel = sequencer_layout.side_panel
 
         # Add sequencer widget to main panel (step_base)
         step_base.add_widget(SeqWidgetObject)
@@ -335,6 +351,7 @@ class SequencerApp(App):
                 file_list.data.insert(0, {'value': file})
         sequencer_layout.add_widget(file_list)
         sequencer_layout_grid.add_widget(transport)
+        # sequencer_layout_grid.add_widget()
         # sequencer_layout_grid.add_widget(playhead_control_bar)
 
         sequencer_layout_grid.add_widget(step_base)

@@ -12,6 +12,25 @@ from kivy.uix.scrollview import ScrollView
 from kivy.graphics import *
 import random
 from pyo import *
+from kivy.clock import Clock
+
+        # fsec = self.tick
+        # curr_min = fsec/60
+        # curr_msec = (fsec*1000)%1000
+        # curr_sec = fsec%60
+
+        # tick = self.tick
+        # hours = int(tick / 3600)
+        # mins = int((tick % 3600) / 60)
+        # secs = int(tick % 60)
+        # millis = int((tick * 1000) % 1000)
+
+        # tick = self.tick
+        # ticks_per_beat = self.ticks_per_beat
+        # beats_per_bar = self.beats_per_bar
+        # curr_bar = int(tick/(ticks_per_beat*beats_per_bar));
+        # curr_beat = int(tick/ticks_per_beat)%ticks_per_beat;
+        # curr_step = float(tick - int(tick)/ticks_per_beat*ticks_per_beat);
 
 # s = Server(duplex=0)
 # # scarlett device but may need pulseaudio -k to hear this
@@ -72,12 +91,15 @@ from pyo import *
 # pa_list_devices()
 # s.gui(locals())
 
-s = Server(sr=44100, duplex=0, audio='pa')
+s = Server(sr=44100, duplex=0)
 s.setInOutDevice(4)
 s.boot()
 s.start()
 
-class MyAppRoot(FloatLayout):
+class TimingBar(GridLayout):
+    # step = StringProperty()
+    pass
+class MyAppRoot(GridLayout):
     def __init__(self, **kwargs):
         self.octave = 5
         super(MyAppRoot, self).__init__(**kwargs)
@@ -87,7 +109,18 @@ class MyAppRoot(FloatLayout):
         self.server = Server(audio="jack")
         self.server.deactivateMidi()
         self.server.boot().start()
+
+        self.tick=0
+        self.beats_per_bar = 16
+        self.ticks_per_beat = 4
+        self.fps = 30.
+
+        self.cols = 2
+        self.rows = 1
+
         # self.server.setInOutDevice(5)
+
+
         pa_list_devices()
         self.server.start()
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
@@ -97,19 +130,66 @@ class MyAppRoot(FloatLayout):
         self.lab = Label(text="thetext")
         self.layout = GridLayout(cols=2)
         self.splitter = Splitter()
+        self.timingbar = TimingBar()
         #self.splitter.min_size = 100
         #self.splitter.max_size = 250
         self.splitter.strip_size = '10pt'
         self.add_widget(self.layout)
         self.layout.add_widget(self.splitter)
+        self.layout.add_widget(self.timingbar)
         self.lab.bind(on_press=self.callback)
         #Window.bind(on_key_down=self.key_action)
-        self.splitter.add_widget(self.MyButton)
-        self.splitter.add_widget(self.MyButton2)
-        # self.snd_path3 = "sounds/kick1.wav"
-        #self.sf = SfPlayer('snare.wav', speed=[1, 0.995], loop=True, mul=0.4).out()
+        self.layout.add_widget(self.MyButton)
+        self.layout.add_widget(self.MyButton2)
 
-    def playsound(self, key, sample="sounds/cowbell2.wav"):
+        self.SPEED = 0.125
+        self.frame = 30
+
+        # self.m = Metro(self.SPEED).play()
+        # self.snd_path3 = "sounds/kick1.wav"
+        #self.sf = SfPlayer('snare.wav', speed=1, 0.995], loop=True, mul=0.4).out()
+
+        # self.tf = TrigFunc(self.m, self.playsound)
+
+        Clock.schedule_interval(lambda dt: self.tickframe(), 1/self.fps)
+
+    def tickframe(self):
+        beats_per_minute = 120
+        ticks_per_beat = 4
+        beats_per_bar = 4
+
+        self.frame+=3000
+        frame = self.frame
+        tick = self.tick
+        self.playsound()
+
+        fSampleRate = float(44100)
+        fsec = frame/fSampleRate;
+
+        curr_min = int(fsec/60);
+        curr_msec = int(fsec*1000)%1000;
+        curr_sec = int(fsec)%60;
+
+        curr_bar = int(tick/(ticks_per_beat*beats_per_bar));
+        curr_beat = int(tick/ticks_per_beat)%ticks_per_beat;
+        curr_step = float(tick - int(tick)/ticks_per_beat*ticks_per_beat);
+
+
+        print("{}:{}:{}".format(curr_min, curr_sec, curr_msec))
+        print("bar: {}, beat: {}, step: {}".format(curr_bar, curr_beat, curr_step))
+
+        # min / sec / millisec
+        self.timingbar.ids.min.text=str(curr_min)
+        self.timingbar.ids.sec.text=str(curr_sec)
+        self.timingbar.ids.msec.text=str(curr_msec)
+
+        # bar / beat / step
+        self.timingbar.ids.bar.text=str(curr_bar)
+        self.timingbar.ids.beat.text=str(curr_beat)
+        self.timingbar.ids.step.text=str(curr_step)
+
+
+    def playsound(self, key='a', sample="sounds/cowbell2.wav"):
         # stereo playback with a slight shift between the two channels.
         if key == "a":
             speed = midiToTranspo(60.0 + self.octave)
@@ -141,8 +221,11 @@ class MyAppRoot(FloatLayout):
         else:
             speed = midiToTranspo(60.0 + self.octave)
         self.sf = SfPlayer(sample, speed=[speed,speed], loop=False, mul=0.4).out()
+        # TrigBurst(self.sf).out()
         #self.sf.play()
-        print('tried')
+
+
+        
 
     def _keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)

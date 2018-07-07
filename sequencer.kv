@@ -1,39 +1,63 @@
 #:kivy 1.10.0
 #:import theme theme
+<Side_Panel>:
+  canvas.before:
+    Color:
+      rgba: 1,0,0,1
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  rows: 5
+  cols: 5
+  size_hint_x: None
+  size_hint_y: None
+  size: 300, 11000
+  pos: -300, 0
 <Spacer@Label>:
   size_hint_x:None
   width: 10
 <TimingBar>:
-  GridLayout:
-    rows: 2
-    cols: 6
-    spacing: 0
-    padding:0
-    size_hint_x: .2
-    Label:
-      text:"Min"
-    Label:
-      text:"Sec"
-    Label:
-      text:"Msec"
-    Label:
-      text:"Bar"
-    Label:
-      text:"Beat"
-    Label:
-      text:"Step"
-    Label:
-      text:"000"
-    Label:
-      text:"00"
-    Label:
-      text:"000"
-    Label:
-      text:"000"
-    Label:
-      text:"00"
-    Label:
-      text:"0.0"
+  canvas.before:
+    Color:
+      rgba: theme.transport_timing_bar
+    Rectangle:
+      size: self.size
+      pos: self.pos
+  rows: 2
+  cols: 6
+  spacing: 0
+  padding:0
+  size_hint_x: 1
+  Label:
+    text:"Min"
+  Label:
+    text:"Sec"
+  Label:
+    text:"Msec"
+  Label:
+    text:"Bar"
+  Label:
+    text:"Beat"
+  Label:
+    text:"Step"
+  Label:
+    id: min
+    text:"000"
+  Label:
+    id: sec
+    text:"00"
+  Label:
+    id: msec
+    text:"000"
+  Label:
+    id: bar
+    text:"000"
+  Label:
+    id: beat
+    text:"00"
+  Label:
+    id: step
+    text:"0.0"
 <PlayheadControlBar>:
   canvas.before:
     Color:
@@ -49,8 +73,8 @@
   background_down:''
   background_color: theme.transport_buttons
   color: theme.transport_buttons_text
-  font_size:'12sp'
-  size_hint_x: .5
+  font_size:'18sp'
+  size_hint_x: .3
 <NumericInput>:
   canvas.before:
     Color:
@@ -63,7 +87,7 @@
   text: "hello"
   padding: 2 
   spacing: 2
-  size_hint_x:.4
+  size_hint_x:.3
   Label:
     text:root.text
   Button:
@@ -125,63 +149,39 @@
       min: 1
       max: 8
     # Spacer:
-    GridLayout:
-      rows: 2
-      cols: 6
-      spacing: 0
-      padding:0
-      # size_hint_x: .2
-      Label:
-        text:"Min"
-      Label:
-        text:"Sec"
-      Label:
-        text:"Msec"
-      Label:
-        text:"Bar"
-      Label:
-        text:"Beat"
-      Label:
-        text:"Step"
-      Label:
-        text:"000"
-      Label:
-        text:"00"
-      Label:
-        text:"000"
-      Label:
-        text:"000"
-      Label:
-        text:"00"
-      Label:
-        text:"0.0"
+    TimingBar:
     TransportButton:
-      text:"Open Project"
+      text:"Open"
       on_press:root.button_open_project()
     TransportButton:
-      text:"Save Project"
+      text:"Save"
       on_press:root.button_save_project()
     TransportButton:
       text:"Options"
       on_press:root.button_options()
-    TransportButton:
-      text:"<"
-      on_press:root.button_stop()
-    TransportButton:
       text:"Play"
       on_press:root.button_play()
-    TransportButton:
-      text:"Stop"
-      on_press:root.button_stop()
-    TransportButton:
-      text:">"
-      on_press:root.button_stop()
     ToggleButton:
-      size_hint_x: .5
+      size_hint_x: .3
       background_normal:''
       text:"Loop"
       on_press:root.button_loop(self)
       background_color: theme.transport_buttons
+    TransportButton:
+      text:"Stop"
+      on_press:root.button_stop()
+    TransportButton:
+      text:"<<"
+      on_press:root.button_stop()
+    TransportButton:
+      text:"<"
+      on_press:root.button_stop()
+    TransportButton:
+      text:">"
+      on_press:root.button_stop()
+    TransportButton:
+      text:">>"
+      on_press:root.button_stop()
     # Label:
     #   text:"Bpm"
     # TextInput:
@@ -195,7 +195,7 @@
     #   size:(50, 10)
     #   on_text_validate: root.bpm_text(self)
     Button:
-      size_hint_x: .5
+      size_hint_x: .3
       background_normal:''
       background_color: theme.about_button
       text:"About"
@@ -204,7 +204,7 @@
   background_normal:''
   background_color: theme.left_file_browser_row
   color: theme.left_file_browser_row_text_color
-  font_size: '22sp'
+  font_size: '12sp'
   value: ''
   size_hint_y:.1
   height:10
