@@ -55,7 +55,7 @@ class Seq2(object):
     def get_bpm_time(self):
         return self.bpm *0.0001
     def tickframe(self, ai, grid, playhead):
-        self.tick+=0.125
+        # self.tick+=0.125
         # self.tick+=self.bpm*0.001
 
         # print("bpm to dec", 125*0.0001)
@@ -106,7 +106,7 @@ class Seq2(object):
         for item in ai:
             # print("tickframe item", item.shape.pos)
             if playhead.ph.points[0] == item.shape.pos[0]:
-                print("HIT A BLOCK")
+                # print("HIT A BLOCK")
                 item.play()
 
 class Side_Panel(FloatLayout):
@@ -222,7 +222,7 @@ class GridLines(Widget):
         self.main_lines = []
         self.beats_per_bar = 16
         self.ticks_per_beat = 4
-        self.instGroup = InstructionGroup()
+        # self.instGroup = InstructionGroup()
 
         with self.canvas:
             Color(1,0,0,1)
@@ -353,7 +353,7 @@ class SeqGridWidget(Widget):
 
         # Clock.schedule_interval(lambda dt: self.playhead.move_playhead(), 0.001)
         # Clock.schedule_interval(partial(self.playhead.move_playhead, self.grid.get_grid_spacing()), 0.250)
-        bpm = 174
+        bpm = 120
         seconds_in_tick = 1.0/(bpm/60.0*self.grid.ticks_per_beat)
         print("seconds_in_tick", seconds_in_tick)
         frames_per_pixel = seconds_in_tick*44100/self.grid.space

@@ -99,9 +99,18 @@ class AudioItem(Widget):
         self.size = size
         self.color = (0.4, uniform(0.3,1), uniform(0.3,1))
         print("sound might fail here because aengine doesn't have server booted")
+
         self.sf = SfPlayer(self.filename, mul=0.3).stop()
         self.sf2 = self.sf.mix(2).out()
 
+        self.sine = Sine(freq=[.2, .50], mul=1000, add=1500)
+        self.lf2 = LFO([.13,.41], sharp=.7, type=1, mul=.4, add=.4)
+
+        self.fx1 = Delay(self.sf2, delay=self.lf2, feedback=.5, mul=.4).out()
+        self.f = Biquadx(self.fx1, freq=self.sine, q=5, type=0)
+
+        self.effects.append(self.fx1)
+        print("Effects: ", self.effects)
         # Color(0.4, 0.52, 0.74)
         # print(p.rgb)
         # self.size = (50,40)
@@ -111,8 +120,8 @@ class AudioItem(Widget):
         # self.add_widget(Label(text="testlabel"))
         # self.text.pos = (self.shape.pos[0], self.shape.pos[1])
     def play(self):
-        self.sf = SfPlayer(self.filename, mul=0.3).stop()
-        self.sf2 = self.sf.mix(2).out()
+        # self.sf = SfPlayer(self.filename, mul=0.3).stop()
+        # self.sf2 = self.sf.mix(2).out()
         self.sf.play()
     def setfn(self, path):
         self.sf.setPath(path)

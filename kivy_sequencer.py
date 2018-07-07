@@ -85,7 +85,7 @@ class SequencerLayout(BoxLayout):
         self.am = AudioMixer()
         self.ae.start()
         # self.ae.run()
-        self.bpm = 200
+        self.bpm = 120
         self.ticks = 4 
         self.metro_val = (60000 / self.bpm / self.ticks) * 0.001
         print(self.metro_val, "bpm")
