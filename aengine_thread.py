@@ -26,9 +26,9 @@ class AudioEngine(multiprocessing.Process):
         #jackd -d alsa -d hw:USB -P -p 1024 -r 44100 - don't
         #in qjackctl start jack - yes, wait for system outputs to show
         # open sequencer
+        # self.m = Metro()
 
-        # self.engine.setInOutDevice(5)
-        # self.m = Metro(.125)
+        # self.server.setInOutDevice(4)
     def start(self):
         # self.engine.boot()
         # self.engine.setJackAuto(False, False) 
@@ -36,6 +36,8 @@ class AudioEngine(multiprocessing.Process):
 
         self.server.deactivateMidi()
         self.server.boot().start()
+        self.m = Metro(.0125)
+        self.m.play()
         # print("Engine started - Sample Rate: {sr} - Channels: {chan} - Buffer Size: {buf} - Duplex: {dup}".format(sr=self.sr,chan=self.nchnls,buf=self.buffersize,dup=self.duplex))
     # def run(self):
     #     self.server = Server(audio="jack")
@@ -94,22 +96,27 @@ class AudioItem(Widget):
         self.volume = volume
         self.pan = pan
         self.effects = []
+        # vocoder, delay, low pass, high pass, band pass, reverb, distort, bitcrusher, chorus
+        # freq shift, flanger, phaser, 1band eq, 3band eq, graphic eq, compressor, wahwah
         self.velocity = velocity
         self.pos = pos
         self.size = size
         self.color = (0.4, uniform(0.3,1), uniform(0.3,1))
         print("sound might fail here because aengine doesn't have server booted")
 
+        # print("kwargs", **kwargs)
+
         self.sf = SfPlayer(self.filename, mul=0.3).stop()
         self.sf2 = self.sf.mix(2).out()
 
-        self.sine = Sine(freq=[.2, .50], mul=1000, add=1500)
-        self.lf2 = LFO([.13,.41], sharp=.7, type=1, mul=.4, add=.4)
+        if random.randint(0,1) == 1:
+            self.sine = Sine(freq=[.2, .50], mul=1000, add=1500)
+            self.lf2 = LFO([.13,.41], sharp=.7, type=1, mul=.4, add=.4)
 
-        self.fx1 = Delay(self.sf2, delay=self.lf2, feedback=.5, mul=.4).out()
-        self.f = Biquadx(self.fx1, freq=self.sine, q=5, type=0)
+            self.fx1 = Delay(self.sf2, delay=self.lf2, feedback=.5, mul=.4).out()
+            self.f = Biquadx(self.fx1, freq=self.sine, q=5, type=0)
 
-        self.effects.append(self.fx1)
+        # self.effects.append(self.fx1)
         print("Effects: ", self.effects)
         # Color(0.4, 0.52, 0.74)
         # print(p.rgb)
@@ -122,6 +129,7 @@ class AudioItem(Widget):
     def play(self):
         # self.sf = SfPlayer(self.filename, mul=0.3).stop()
         # self.sf2 = self.sf.mix(2).out()
+        # print(self.lf2.get())
         self.sf.play()
     def setfn(self, path):
         self.sf.setPath(path)

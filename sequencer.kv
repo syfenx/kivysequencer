@@ -101,7 +101,9 @@
     on_release:
       root.value += root.step
       root.value = min(root.value, root.max)
+      root.valchange(root.text, root.value)
   TextInput:
+    id: txt
     text: str(root.value)
     background_color: .2,.2,.2,1
     foreground_color: 1,1,1,1
@@ -135,21 +137,25 @@
     NumericInput:
       min: 10
       max: 999
+      value:120
       text:"BPM"
     NumericInput:
       text:"TPB"
       min: 1
       max: 12
+      value: 4
     NumericInput:
       text:"BPB"
       min: 1
       max: 24
+      value: 4
     NumericInput:
       text:"OCT"
       min: 1
       max: 8
+      value: 5
     # Spacer:
-    TimingBar:
+    # TimingBar:
     TransportButton:
       text:"Open"
       on_press:root.button_open_project()

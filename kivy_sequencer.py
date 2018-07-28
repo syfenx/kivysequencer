@@ -76,6 +76,11 @@ class NumericInput(GridLayout):
     max = NumericProperty(INF)
     step = NumericProperty(1)
     # text = StringProperty()
+    def valchange(self, id, value):
+        print("value change type: {}, value: {}".format(id, value))
+        app = App.get_running_app()
+        if id == 'BPB':
+            app.root.sgr.grid.set_beats_per_bar(value)
     
     
 class SequencerLayout(BoxLayout):
@@ -110,7 +115,9 @@ class SequencerLayout(BoxLayout):
         self.inc = 0
 
         self.sample_filename_list = []
-        for file in os.listdir("sounds"):
+        # print("Current dir", os.getcwd())
+        path = os.path.dirname(os.path.abspath(__file__))
+        for file in os.listdir(path+"/sounds/"):
             if file.endswith(".wav"):
                 self.sample_filename_list.append(file)
             # self.am.addTrack("sounds/" + file)
@@ -280,6 +287,7 @@ class SequencerApp(App):
         transport = Transport()
         transport.size=(200,80)
         timingbar = sequencer_layout.timingbar
+        timingbar.size_hint_x = .2
         timingbar.ids.step.text="arstrsts"
         transport.add_widget(timingbar)
         playhead_control_bar = PlayheadControlBar()
@@ -345,7 +353,8 @@ class SequencerApp(App):
         file_list.size_hint_x = .13
 
         sample_filename_list = []
-        for file in os.listdir("sounds"):
+        path = os.path.dirname(os.path.abspath(__file__))
+        for file in os.listdir(path+"/sounds"):
             if file.endswith(".wav"):
                 sample_filename_list.append(file)
                 file_list.data.insert(0, {'value': file})

@@ -55,11 +55,11 @@ class Seq2(object):
     def get_bpm_time(self):
         return self.bpm *0.0001
     def tickframe(self, ai, grid, playhead):
-        # self.tick+=0.125
+        self.tick+=0.125
         # self.tick+=self.bpm*0.001
 
         # print("bpm to dec", 125*0.0001)
-        # print("tick: ", self.tick)
+        print("tick: ", self.tick)
         # for i in self.ai:
         #     i.play
         # self.ai[self.tick].play()
@@ -84,7 +84,6 @@ class Seq2(object):
         # print("bar: {}, beat: {}, step: {}".format(curr_bar, curr_beat, curr_step))
 
 
-
         # tick = tick
         # self.ticks_per_beat
         hours = int(tick / 3600)
@@ -101,7 +100,7 @@ class Seq2(object):
         App.get_running_app().root.timingbar.ids.beat.text=str(curr_beat)
         App.get_running_app().root.timingbar.ids.step.text=str(curr_step)
 
-
+        #     print(self.lfo.get())
         # print(playhead.ph.pos[0])
         for item in ai:
             # print("tickframe item", item.shape.pos)
@@ -216,12 +215,12 @@ class GridLines(Widget):
         # grid
         super(GridLines, self).__init__(**kwargs)
         self.width = width
-        self.space = 16
+        self.space = 32
         self.start = 0
         self.amt = (self.width / self.space) 
         self.main_lines = []
         self.beats_per_bar = 16
-        self.ticks_per_beat = 4
+        self.ticks_per_beat = 8
         # self.instGroup = InstructionGroup()
 
         with self.canvas:
@@ -282,7 +281,9 @@ class GridLines(Widget):
     def set_grid_spacing(self, spacing):
         self.space = spacing
     def set_beats_per_bar(self, beats):
-        self.beats_per_bar = beats
+        with self.canvas:
+            self.beats_per_bar = beats
+            self.draw_grid(self.amt, 0, self.width, self.height, self.space, App.get_running_app().root.sgr.audio_items, self.canvas)
     def set_ticks_per_beat(self, ticks):
         self.ticks_per_beat = ticks
 
@@ -336,6 +337,8 @@ class SeqGridWidget(Widget):
         # current sound selected in left hand browser
         self.current_sound = ""
         self.old_shapes=[]
+        self.oldpos = (0,0)
+        # self.tf = TrigFunc(self.ae.m, partial(self.seq.tickframe, self.audio_items,self.grid,self.playhead))
         with self.canvas:
             self.grid.draw_grid(self.grid.amt,self.grid.start,self.width,self.height, self.grid.space, self.audio_items, self.canvas)
 
@@ -353,7 +356,7 @@ class SeqGridWidget(Widget):
 
         # Clock.schedule_interval(lambda dt: self.playhead.move_playhead(), 0.001)
         # Clock.schedule_interval(partial(self.playhead.move_playhead, self.grid.get_grid_spacing()), 0.250)
-        bpm = 120
+        bpm = 90
         seconds_in_tick = 1.0/(bpm/60.0*self.grid.ticks_per_beat)
         print("seconds_in_tick", seconds_in_tick)
         frames_per_pixel = seconds_in_tick*44100/self.grid.space
@@ -363,7 +366,7 @@ class SeqGridWidget(Widget):
         # time = 0.0125
 
         # MOVE THE PLAYHEAD AT EACH BEAT SIZE and change the 32 value based on grid zoom
-        Clock.schedule_interval(partial(self.playhead.move_playhead, 16), seconds_in_tick)
+        Clock.schedule_interval(partial(self.playhead.move_playhead, 8), seconds_in_tick)
         # Clock.schedule_interval(partial(self.playhead.move_playhead, 1), t)
         # print(seconds_in_tick)
 
@@ -435,6 +438,7 @@ class SeqGridWidget(Widget):
 
         print(self.sel_items)
 
+
     def on_touch_down(self, touch):
         super(SeqGridWidget, self).on_touch_down(touch)
         if touch.button == 'left':
@@ -443,6 +447,8 @@ class SeqGridWidget(Widget):
             print(self.sb.start)
 
 
+        self.oldpos = touch.x, touch.y
+        print("oldpos",self.oldpos)
 
         # add a copy of the old list of item locations
         # self.old_shapes.append(self.sel_items)
@@ -482,7 +488,7 @@ class SeqGridWidget(Widget):
                     # if self.current_sound is not None:
                     ai = AudioItem(self.current_sound, 100, 100, 100, [touch.x - (box_size*2)/2, touch.y - box_size/2], [box_size*2, box_size])
                     # else:
-                        # ai = AudioItem('sounds/snare1.wav', 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size, box_size])
+                        # ai = AudioItem('sounds/snare1.wav', 100, 100, 100, [touch.x - box_size/2, touch.y - box_size/2], [box_size*2, box_size])
                     # add to audio_item list
                     self.audio_items.append(ai)
                     self.check_snap_to_grid(ai, touch)
@@ -512,20 +518,21 @@ class SeqGridWidget(Widget):
         if self.sb.r in self.canvas.children:
             self.canvas.remove(self.sb.r)
 
+    
     def on_touch_move(self, touch):
         # if ctrl is held down, allow a selection box
         if self.sel_status:
             self.sel_rect_check()
 
         # self.old_shapes.clear()
-        for c, item in enumerate(self.sel_items):
+            for c, item in enumerate(self.old_shapes):
             # self.old_shapes.append(item)
             # xOld, yOld = item.shape.pos[0]+touch.x, item.shape.pos[1]+touch.y
             # idx = self.old_shapes.index(item)
             # item.shape.pos = randint(touch.x,touch.x+20) + touch.x, touch.y
-            posX, posY = item.shape.pos[0], item.shape.pos[1]
-
-            item.shape.pos = touch.x + posX, touch.y + posY
+                posX, posY = item.shape.pos[0], item.shape.pos[1]
+                # item.shape.pos = self.oldpos[0] + touch.x, self.oldpos[1] + touch.y
+                item.shape.pos = (touch.x - posX) + self.oldpos[0], (touch.y - posY) + self.oldpos[1]
             print("Shape: x:{} y:{} | Touch: x:{} y:{}".format(posX, posY, touch.x, touch.y))
 
         # if right click is held down and dragged, delete items
@@ -594,20 +601,38 @@ class SeqGridWidget(Widget):
         if key == '0':
             with self.canvas:
                 self.grid.ticks_per_beat+=1
-                self.grid.beats_per_bar+=self.grid.ticks_per_beat
+                # self.grid.beats_per_bar+=self.grid.ticks_per_beat
                 self.canvas.clear()
                 self.grid.draw_grid(self.grid.amt, 0, self.width, self.height, self.grid.space, self.audio_items, self.canvas)
                 self.grid.set_ticks_per_beat(self.grid.ticks_per_beat)
-                self.grid.set_beats_per_bar(self.grid.beats_per_bar)
+                # self.grid.set_beats_per_bar(self.grid.beats_per_bar)
                 print("0 was pressed")
         if key == '9':
             with self.canvas:
                 self.grid.ticks_per_beat-=1
-                self.grid.beats_per_bar-=self.grid.ticks_per_beat
+                # self.grid.beats_per_bar-=self.grid.ticks_per_beat
                 self.canvas.clear()
                 self.grid.draw_grid(self.grid.amt, 0, self.width, self.height, self.grid.space, self.audio_items, self.canvas)
                 self.grid.set_ticks_per_beat(self.grid.ticks_per_beat)
-                self.grid.set_beats_per_bar(self.grid.beats_per_bar)
+                # self.grid.set_beats_per_bar(self.grid.beats_per_bar)
+                print("9 was pressed")
+        if key == '7':
+            with self.canvas:
+                self.grid.space-=1
+                # self.grid.beats_per_bar+=self.grid.ticks_per_beat
+                self.canvas.clear()
+                self.grid.draw_grid(self.grid.amt, 0, self.width, self.height, self.grid.space, self.audio_items, self.canvas)
+                # self.grid.set_ticks_per_beat(self.grid.ticks_per_beat)
+                # self.grid.set_beats_per_bar(self.grid.beats_per_bar)
+                print("0 was pressed")
+        if key == '8':
+            with self.canvas:
+                self.grid.space+=1
+                # self.grid.beats_per_bar-=self.grid.ticks_per_beat
+                self.canvas.clear()
+                self.grid.draw_grid(self.grid.amt, 0, self.width, self.height, self.grid.space, self.audio_items, self.canvas)
+                # self.grid.set_ticks_per_beat(self.grid.ticks_per_beat)
+                # self.grid.set_beats_per_bar(self.grid.beats_per_bar)
                 print("9 was pressed")
 
     def draw_grid(self, amt, start, width, height, space):
