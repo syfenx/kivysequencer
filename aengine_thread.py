@@ -20,7 +20,8 @@ class AudioEngine(multiprocessing.Process):
         self.duplex = 0
         self.pitch = pitch
 
-        self.server = Server(audio="jack")
+        #self.server = Server(audio="jack")
+        self.server = Server()
         # self.engine = Server(sr=self.sr, nchnls=self.nchnls, buffersize=self.buffersize, duplex=self.duplex)
         #jack_control stop - don't
         #jackd -d alsa -d hw:USB -P -p 1024 -r 44100 - don't
@@ -145,17 +146,3 @@ class AudioMixer(object):
         self.fn = fn 
         self.tracks.append(AudioItem(self.fn, 0, 0, 0))
         print("added {} to mixer, total tracks = {}".format(self.fn, len(self.tracks)))
-
-
-
-if __name__ == '__main__':
-    p1 = AudioEngine(48) 
-    p1.start()
-    p1.join()
-
-    # time.sleep(5)
-    # p1.playsound("sounds/kick1.wav")
-    # time.sleep(5)
-    # p2.playsound("sounds/kick1.wav")
-    # time.sleep(5)
-    # p3.playsound("sounds/kick1.wav")

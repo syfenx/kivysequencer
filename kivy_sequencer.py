@@ -8,7 +8,7 @@ import os
 # 3. pip install git+https://github.com/kivy/kivy.git@master
 
 import kivy
-kivy.require("1.10.0")
+#kivy.require("1.10.0")
 import time
 from pyo import *
 from random import sample
@@ -47,6 +47,7 @@ Config.set('graphics', 'height', '1080')
 Config.write()
 from kivy.core.window import Window
 Window.size = (2000, 1500)
+
 from kivy.clock import Clock
 from functools import partial
 # from aengine import AudioEngine, AudioMixer, AudioItem
@@ -117,7 +118,7 @@ class SequencerLayout(BoxLayout):
         self.sample_filename_list = []
         # print("Current dir", os.getcwd())
         path = os.path.dirname(os.path.abspath(__file__))
-        for file in os.listdir(path+"/sounds/"):
+        for file in os.listdir(path+"\\sounds\\"):
             if file.endswith(".wav"):
                 self.sample_filename_list.append(file)
             # self.am.addTrack("sounds/" + file)
@@ -147,12 +148,9 @@ class Transport(BoxLayout):
     def button_about(self):
         print("about pressed")
         cont = GridLayout(cols=1)
-        about_txt = "{appname} " \
-        "Created 6/23/18" \
-        "blah blah blah" \
-        "blah blah blah" \
-        "blah blah blah" \
-        "rstrstsrt".format(appname=APPNAME)
+        about_txt = "{appname}\n" \
+        "Created on 6/23/18 \nby Sam H." \
+        "".format(appname=APPNAME)
         cont.add_widget(Label(text=about_txt))
 
         popup = Popup(title='About {}'.format(APPNAME),

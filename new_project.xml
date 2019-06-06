@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+   <items>
+      <audioitem effects="[]" filename="sounds/perc1.wav" pan="100" posX="0" posY="10944" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare2.wav" pan="100" posX="64" posY="10848" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare2.wav" pan="100" posX="192" posY="10848" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare2.wav" pan="100" posX="320" posY="10848" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/snare2.wav" pan="100" posX="448" posY="10848" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/ohh1.wav" pan="100" posX="128" posY="10752" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/ohh1.wav" pan="100" posX="384" posY="10752" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/ohh1.wav" pan="100" posX="256" posY="10752" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/crash1.wav" pan="100" posX="0" posY="10592" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/clap3.wav" pan="100" posX="192" posY="10528" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+      <audioitem effects="[]" filename="sounds/kick2.wav" pan="100" posX="0" posY="10496" sizeH="32" sizeW="64" velocity="100" volume="100"/>
+   </items>
+</data>
