@@ -16,6 +16,7 @@ Requires:
 ```sh
 pip install -r requirements.txt
 (if above fails)
+pip install Kivy-2.0.0.dev0-cp36-cp36m-win32.whl
 pip install kivy_deps.sdl2
 pip install kivy_deps.gstreamer
 pip install kivy_deps.glew
